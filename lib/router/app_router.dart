@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:proyecto_hidoc/doctor/screen/homedoctor_screen.dart';
+import 'package:proyecto_hidoc/features/doctor/screen/homedoctor_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/home_doctor',
