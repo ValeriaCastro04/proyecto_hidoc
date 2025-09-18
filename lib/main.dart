@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:proyecto_hidoc/router/app_router.dart';
+import 'package:proyecto_hidoc/config/router/app_router.dart';
 
 void main() {
   runApp(const MainApp());

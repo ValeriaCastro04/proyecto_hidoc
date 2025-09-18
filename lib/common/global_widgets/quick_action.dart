@@ -8,7 +8,7 @@ class QuickActionsButton extends StatefulWidget {
   const QuickActionsButton({
     super.key,
     this.icon = Icons.add,
-    this.text = 'Buttom',
+    this.text = 'Button',
     required this.onPressed,
   });
 
@@ -23,8 +23,8 @@ class _QuickActionsButtonState extends State<QuickActionsButton> {
   Widget build(BuildContext context) {
     final Color baseColor = Theme.of(context).colorScheme.primary;
     final Color currentBorderColor = _isPressed ? baseColor : baseColor;
-    final Color currentContentColor = _isPressed ? Colors.white : baseColor;
-    final Color currentBackgroundColor = _isPressed ? baseColor : Colors.white;
+    final Color currentContentColor = _isPressed ? Theme.of(context).colorScheme.onPrimary : baseColor;
+    final Color currentBackgroundColor = _isPressed ? baseColor : Theme.of(context).colorScheme.onPrimary;
     
     return GestureDetector(
       onTapDown: (_) {
@@ -44,31 +44,31 @@ class _QuickActionsButtonState extends State<QuickActionsButton> {
         });
       },
       child: AnimatedContainer(
-        duration: const Duration (milliseconds: 200),
-        width: 200,
-        height: 100,
+        duration: const Duration (milliseconds: 100),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
           color: currentBackgroundColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: currentBorderColor,
             width: 2,
           ),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               widget.icon,
               color: currentContentColor,
-              size: 40,
+              size: 30,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               widget.text,
               style: TextStyle(
                 color: currentContentColor,
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
             ),
