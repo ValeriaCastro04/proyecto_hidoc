@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class QuickActionsButton extends StatefulWidget {
+class OutlineButton extends StatefulWidget {
   final IconData icon;
   final String text;
   final VoidCallback onPressed;
 
-  const QuickActionsButton({
+  const OutlineButton({
     super.key,
     this.icon = Icons.add,
     this.text = 'Button',
@@ -13,10 +13,10 @@ class QuickActionsButton extends StatefulWidget {
   });
 
   @override
-  _QuickActionsButtonState createState() => _QuickActionsButtonState();
+  _OutlineButtonState createState() => _OutlineButtonState();
 }
 
-class _QuickActionsButtonState extends State<QuickActionsButton> {
+class _OutlineButtonState extends State<OutlineButton> {
   bool _isPressed = false;
   
   @override

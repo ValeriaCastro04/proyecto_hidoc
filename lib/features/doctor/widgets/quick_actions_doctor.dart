@@ -1,34 +1,29 @@
-import 'package:proyecto_hidoc/common/global_widgets/quick_action.dart'; // Asegúrate de que la ruta sea correcta
+import 'package:proyecto_hidoc/common/global_widgets/outline_button.dart'; // Asegúrate de que la ruta sea correcta
 import 'package:flutter/material.dart';
 
 final List<Widget> doctorButtons = [
-      QuickActionsButton(
+      OutlineButton(
         onPressed: () {
           print('Nueva Receta');
         },
         text: 'Nueva Receta',
         icon: Icons.description,
       ),
-      QuickActionsButton(
+      OutlineButton(
         onPressed: () {
           print('Pacientes');
         },
-        /** ejemplo de enrutar otra página
-         * onPressed: () {
-            context.go('/nueva_receta'); // Usa el nombre de la ruta definido en tu enrutador
-          },
-         */
         text: 'Pacientes',
         icon: Icons.people,
       ),
-      QuickActionsButton(
+      OutlineButton(
         onPressed: () {
           print('Estadísticas');
         },
         text: 'Estadísticas',
         icon: Icons.show_chart,
       ),
-      QuickActionsButton(
+      OutlineButton(
         onPressed: () {
           print('Agenda');
         },

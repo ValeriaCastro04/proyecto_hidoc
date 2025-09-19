@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class QuickActionsGrid extends StatelessWidget {
+class OutlineButtonGrid extends StatelessWidget {
   final String title;
   final List<Widget> buttons;
 
-  const QuickActionsGrid({
+  const OutlineButtonGrid({
     super.key,
     required this.title,
     required this.buttons,

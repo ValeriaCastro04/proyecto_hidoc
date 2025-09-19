@@ -60,7 +60,7 @@ class _FooterButtonState extends State<FooterButton> {
               widget.text,
               style: TextStyle(
                 color: currentContentColor,
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
               ),
             ),
