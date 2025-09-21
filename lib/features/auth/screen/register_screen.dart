@@ -9,6 +9,8 @@ import 'package:proyecto_hidoc/common/shared_widgets/segmented_role_toggle.dart'
 import 'package:proyecto_hidoc/common/global_widgets/solid_button.dart';
 
 import 'package:proyecto_hidoc/features/auth/screen/login_screen.dart';
+import 'package:proyecto_hidoc/features/user/screen/homeuser_screen.dart';
+import 'package:proyecto_hidoc/features/doctor/screen/homedoctor_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   static const String name = 'Register';
@@ -74,15 +76,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // TODO: integra tu servicio real de registro aquí
-    // await Auth.register(...);
-
+    // Sin autenticación: redirige por rol
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Cuenta creada. Inicia sesión para continuar')),
-    );
-    context.goNamed(LoginScreen.name);
+    if (_role == UserRole.doctor) {
+      context.goNamed(HomeDoctorScreen.name);
+    } else {
+      context.goNamed(HomeUserScreen.name);
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {

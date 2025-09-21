@@ -10,8 +10,8 @@ import 'package:proyecto_hidoc/common/global_widgets/solid_button.dart';
 
 import 'package:proyecto_hidoc/features/auth/screen/register_screen.dart';
 import 'package:proyecto_hidoc/features/doctor/screen/homedoctor_screen.dart';
-// TODO: importa el home de paciente cuando exista
-// import 'package:proyecto_hidoc/features/user/screen/home_user_screen.dart';
+
+import 'package:proyecto_hidoc/features/user/screen/homeuser_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   static const String name = 'Login';
@@ -52,17 +52,12 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // TODO: integra tu servicio de auth aquí
-    // await Auth.signIn(email: _email.text.trim(), password: _password.text);
-
+    // Sin autenticación: redirige solo por rol
     if (!mounted) return;
     if (_role == UserRole.doctor) {
       context.goNamed(HomeDoctorScreen.name);
     } else {
-      // TODO: cambia a la ruta real cuando tengas el home de paciente
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Inicio como Paciente aún no configurado')),
-      );
+      context.goNamed(HomeUserScreen.name);
     }
   }
 

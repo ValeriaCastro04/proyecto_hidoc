@@ -11,7 +11,8 @@ import 'package:proyecto_hidoc/features/doctor/screen/agenda_screen.dart';
 import 'package:proyecto_hidoc/features/doctor/screen/pacientes_screen.dart';
 import 'package:proyecto_hidoc/features/doctor/screen/reportes_screen.dart';
 
-// Si luego agregas Home de paciente, crea el import y la ruta.
+// PACIENTE
+import 'package:proyecto_hidoc/features/user/screen/homeuser_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   // 👇 que arranque en la pantalla de bienvenida
@@ -31,6 +32,11 @@ final GoRouter appRouter = GoRouter(
       path: '/auth/register',
       name: RegisterScreen.name,
       builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: '/home_user',
+      name: HomeUserScreen.name,
+      builder: (context, state) => const HomeUserScreen(),
     ),
     GoRoute(
       path: '/home_doctor',
