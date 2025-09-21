@@ -13,6 +13,9 @@ import 'package:proyecto_hidoc/features/doctor/screen/reportes_screen.dart';
 
 // PACIENTE
 import 'package:proyecto_hidoc/features/user/screen/homeuser_screen.dart';
+import 'package:proyecto_hidoc/features/user/screen/consultas_screen.dart';
+import 'package:proyecto_hidoc/features/user/screen/historial_screen.dart';
+import 'package:proyecto_hidoc/features/user/screen/perfil_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   // 👇 que arranque en la pantalla de bienvenida
@@ -38,6 +41,26 @@ final GoRouter appRouter = GoRouter(
       name: HomeUserScreen.name,
       builder: (context, state) => const HomeUserScreen(),
     ),
+    GoRoute(
+    path: '/home_user',
+    name: HomeUserScreen.name,
+    builder: (context, state) => const HomeUserScreen(),
+  ),
+  GoRoute(
+    path: '/consultas',
+    name: 'ConsultasUser',
+    builder: (context, state) => const ConsultasScreen(),
+  ),
+  GoRoute(
+    path: '/historial',
+    name: 'HistorialUser',
+    builder: (context, state) => const HistorialScreen(),
+  ),
+  GoRoute(
+    path: '/perfil',
+    name: 'PerfilUser',
+    builder: (context, state) => const PerfilScreen(),
+  ),
     GoRoute(
       path: '/home_doctor',
       name: HomeDoctorScreen.name,
