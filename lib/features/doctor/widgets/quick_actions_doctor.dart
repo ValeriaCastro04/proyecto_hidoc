@@ -1,4 +1,4 @@
-import 'package:proyecto_hidoc/common/global_widgets/outline_button.dart'; // Asegúrate de que la ruta sea correcta
+import 'package:proyecto_hidoc/common/global_widgets/outline_button.dart';  
 import 'package:flutter/material.dart';
 
 final List<Widget> doctorButtons = [
