@@ -37,11 +37,6 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
-      path: '/home_user',
-      name: HomeUserScreen.name,
-      builder: (context, state) => const HomeUserScreen(),
-    ),
-    GoRoute(
     path: '/home_user',
     name: HomeUserScreen.name,
     builder: (context, state) => const HomeUserScreen(),
@@ -81,11 +76,5 @@ final GoRouter appRouter = GoRouter(
       name: ReportesScreen.name,
       builder: (context, state) => const ReportesScreen(),
     ),
-    // TODO: cuando tengas la pantalla Home de Paciente, agrega su ruta aquí
-    // GoRoute(
-    //   path: '/home_user',
-    //   name: HomeUserScreen.name,
-    //   builder: (context, state) => const HomeUserScreen(),
-    // ),
   ],
 );
