@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 /// Envuelve contenido para:
 /// - ocupar toda la altura si hay espacio
-/// - scrollear solo si el contenido no cabe (sin overflow)
+/// - scrollear solo si el contenido no cabe
+/// - y soportar hijos con flex (Spacer/Expanded)
 class ScrollFill extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final Widget child;
@@ -15,17 +16,17 @@ class ScrollFill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (_, constraints) {
-        return SingleChildScrollView(
-          physics: const ClampingScrollPhysics(),
+    return CustomScrollView(
+      physics: const ClampingScrollPhysics(),
+      slivers: [
+        SliverPadding(
           padding: padding,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: IntrinsicHeight(child: child),
+          sliver: SliverFillRemaining(
+            hasScrollBody: false, // <- permite Spacer/Expanded dentro de [child]
+            child: child,
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 }
