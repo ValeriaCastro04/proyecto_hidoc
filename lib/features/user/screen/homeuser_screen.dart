@@ -9,28 +9,31 @@ class HomeUserScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _HomeHeader(),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  children: [
-                    Transform.translate(
-                      offset: const Offset(0, -30),
-                      child: _QuickActionsCard(),
-                    ),
-                    const SizedBox(height: 8),
-                    _RecentActivityCard(),
-                    const SizedBox(height: 24),
-                  ],
+          child: Padding(
+            // 👇 espacio inferior para que no se oculte el contenido
+            padding: const EdgeInsets.only(bottom: 88),
+            child: Column(
+              children: [
+                _HomeHeader(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Column(
+                    children: [
+                      Transform.translate(
+                        offset: const Offset(0, -30),
+                        child: _QuickActionsCard(),
+                      ),
+                      const SizedBox(height: 8),
+                      _RecentActivityCard(),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -67,9 +70,10 @@ class _HomeHeader extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.health_and_safety_rounded,
-                    color: colorScheme.onPrimary,
+                  // 👇 Aquí tu logo en lugar del ícono
+                  Image.asset(
+                    'assets/brand/hidoc_logo.png',
+                    height: 28,
                   ),
                   const SizedBox(width: 8),
                   Text(

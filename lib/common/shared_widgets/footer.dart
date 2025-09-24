@@ -2,43 +2,45 @@ import 'package:flutter/material.dart';
 
 class Footer extends StatelessWidget {
   final List<Widget> buttons;
-  final EdgeInsetsGeometry padding;
+  final double height;
   final Color? backgroundColor;
+  final EdgeInsetsGeometry padding;
 
   const Footer({
     super.key,
     required this.buttons,
-    this.padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    this.height = 72, // 👈 altura fija segura (puedes usar kBottomNavigationBarHeight + 16)
     this.backgroundColor,
+    this.padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return SafeArea(
-      top: false,
-      child: Container(
-        decoration: BoxDecoration(
-          color: backgroundColor ?? cs.surface,
-          border: Border(top: BorderSide(color: cs.outline.withOpacity(.15))),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(.05),
-              blurRadius: 10,
-              offset: const Offset(0, -4),
+
+    return Material(
+      color: backgroundColor ?? cs.surface,
+      elevation: 8, // 👈 reemplaza la sombra manual
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: height, // 👈 clave: constrain en vertical
+          child: Padding(
+            padding: padding,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: buttons
+                  // 👇 distribución horizontal uniforme sin afectar altura
+                  .map((w) => Expanded(child: Center(child: w)))
+                  .toList(),
             ),
-          ],
-        ),
-        padding: padding,
-        child: Row(
-          children: buttons.map((w) => Expanded(child: Center(child: w))).toList(),
+          ),
         ),
       ),
     );
   }
 }
 
-/// ✅ Ahora acepta [selected] (opcional).
 class FooterButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String text;
@@ -50,7 +52,7 @@ class FooterButton extends StatelessWidget {
     required this.onPressed,
     required this.text,
     required this.icon,
-    this.selected = false, // <- default
+    this.selected = false,
   });
 
   @override
@@ -58,25 +60,23 @@ class FooterButton extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final color = selected ? cs.primary : cs.onSurfaceVariant;
 
+    // Hay un Material arriba (en Footer), así que InkWell está bien.
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: onPressed,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 22, color: color),
-            const SizedBox(height: 4),
-            Text(
-              text,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-          ],
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min, // 👈 no crecer verticalmente
+        children: [
+          Icon(icon, size: 22, color: color),
+          const SizedBox(height: 4),
+          Text(
+            text,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
       ),
     );
   }
