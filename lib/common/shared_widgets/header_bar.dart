@@ -1,0 +1,189 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+class HeaderBar extends StatelessWidget implements PreferredSizeWidget {
+  final double height;
+  final Widget child;
+
+  const HeaderBar._({
+    required this.child,
+    required this.height,
+    super.key,
+  });
+
+  /// Header de marca: logo + acciones (Inicio)
+  factory HeaderBar.brand({
+    required String logoAsset,
+    String? title,
+    double logoHeight = 28,
+    List<Widget>? actions,
+  }) {
+    return HeaderBar._(
+      height: 64,
+      child: Row(
+        children: [
+          Row(
+            children: [
+              Image.asset(logoAsset, height: logoHeight),
+              if (title != null) ...[
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ],
+          ),
+          const Spacer(),
+          ...(actions ?? []),
+        ],
+      ),
+    );
+  }
+
+  /// Header de categoría: botón atrás + tarjeta (icono, título, subtítulo)
+  /// Altura mayor para permitir 2 líneas sin recortes
+  factory HeaderBar.category({
+    required String title,
+    String? subtitle,
+    IconData icon = Icons.medical_services_rounded,
+    VoidCallback? onBack,
+  }) {
+    return HeaderBar._(
+      height: 124,
+      child: Row(
+        children: [
+          _BackCircleButton(onBack: onBack),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _CategoryTile(
+              icon: icon,
+              title: title,
+              subtitle: subtitle,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Material(
+      color: cs.surface,
+      elevation: 3,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Size get preferredSize => Size.fromHeight(height);
+}
+
+class _BackCircleButton extends StatelessWidget {
+  final VoidCallback? onBack;
+  const _BackCircleButton({this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onBack ??
+          () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: cs.surfaceVariant.withOpacity(.6),
+          shape: BoxShape.circle,
+          border: Border.all(color: cs.outline.withOpacity(.2)),
+        ),
+        child: Icon(Icons.arrow_back_rounded, color: cs.onSurface),
+      ),
+    );
+  }
+}
+
+class _CategoryTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  const _CategoryTile({required this.icon, required this.title, this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.outline.withOpacity(.15)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icono
+          Container(
+            height: 44,
+            width: 44,
+            decoration: BoxDecoration(
+              color: cs.primary.withOpacity(.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: cs.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: tt.bodyMedium,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

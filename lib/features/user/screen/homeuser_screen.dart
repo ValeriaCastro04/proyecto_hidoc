@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:proyecto_hidoc/features/user/widgets/footer_user.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer.dart';
 import 'package:proyecto_hidoc/features/user/widgets/quick_actions_user.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 
 class HomeUserScreen extends StatelessWidget {
   static const String name = 'HomeUser';
@@ -9,7 +10,24 @@ class HomeUserScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
+      appBar: HeaderBar.brand(
+        logoAsset: 'assets/brand/hidoc_logo.png',
+        title: 'HiDoc!',
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.notifications_none_rounded, color: Theme.of(context).colorScheme.onSurface),
+          ),
+          const SizedBox(width: 8),
+          CircleAvatar(
+            backgroundColor: cs.primary,
+            foregroundColor: cs.onPrimary,
+            child: const Text('JP'),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -66,42 +84,8 @@ class _HomeHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Row(
-                children: [
-                  // 👇 Aquí tu logo en lugar del ícono
-                  Image.asset(
-                    'assets/brand/hidoc_logo.png',
-                    height: 28,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'HiDoc!',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onPrimary,
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.notifications_none_rounded,
-                  color: colorScheme.onPrimary,
-                ),
-              ),
-              const SizedBox(width: 8),
-              CircleAvatar(
-                backgroundColor: colorScheme.onPrimary,
-                foregroundColor: colorScheme.primary,
-                child: const Text('JP'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 28),
+          // 🔻 quitamos la fila con logo/acciones (ya está en el HeaderBar)
+          const SizedBox(height: 4),
           Text(
             'Buenas noches, Juan',
             style: theme.textTheme.headlineMedium?.copyWith(
@@ -116,6 +100,7 @@ class _HomeHeader extends StatelessWidget {
               color: colorScheme.onPrimary.withOpacity(0.85),
             ),
           ),
+          const SizedBox(height: 10),
         ],
       ),
     );

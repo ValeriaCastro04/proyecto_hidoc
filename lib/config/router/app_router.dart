@@ -17,6 +17,10 @@ import 'package:proyecto_hidoc/features/user/screen/consultas_screen.dart';
 import 'package:proyecto_hidoc/features/user/screen/historial_screen.dart';
 import 'package:proyecto_hidoc/features/user/screen/perfil_screen.dart';
 
+//page reutilizable de paciente
+import 'package:proyecto_hidoc/features/user/pages/doctores_disponibles.dart';
+
+
 final GoRouter appRouter = GoRouter(
   // 👇 que arranque en la pantalla de bienvenida
   initialLocation: '/welcome',
@@ -36,16 +40,27 @@ final GoRouter appRouter = GoRouter(
       name: RegisterScreen.name,
       builder: (context, state) => const RegisterScreen(),
     ),
+    // ================== PACIENTE ==================
     GoRoute(
     path: '/home_user',
     name: HomeUserScreen.name,
     builder: (context, state) => const HomeUserScreen(),
   ),
-  GoRoute(
-    path: '/consultas',
-    name: 'ConsultasUser',
-    builder: (context, state) => const ConsultasScreen(),
-  ),
+    GoRoute(
+      path: '/consultas',
+      name: 'ConsultasUser',
+      builder: (context, state) => const ConsultasScreen(),
+      routes: [
+        // Reutilizable por categoría: /consultas/:category
+        GoRoute(
+          path: ':category',
+          name: DoctoresDisponiblesPage.name, // 'DoctoresDisponibles'
+          builder: (context, state) => DoctoresDisponiblesPage(
+            categoryPath: state.pathParameters['category'],
+          ),
+        ),
+      ],
+    ),
   GoRoute(
     path: '/historial',
     name: 'HistorialUser',
@@ -56,6 +71,8 @@ final GoRouter appRouter = GoRouter(
     name: 'PerfilUser',
     builder: (context, state) => const PerfilScreen(),
   ),
+
+  // ================== DOCTOR ==================
     GoRoute(
       path: '/home_doctor',
       name: HomeDoctorScreen.name,
