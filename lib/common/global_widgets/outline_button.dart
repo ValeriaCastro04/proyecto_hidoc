@@ -61,14 +61,14 @@ class _OutlineButtonState extends State<OutlineButton> {
             Icon(
               widget.icon,
               color: currentContentColor,
-              size: 30,
+              size: 28,
             ),
             const SizedBox(height: 4),
             Text(
               widget.text,
               style: TextStyle(
                 color: currentContentColor,
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
               ),
             ),
