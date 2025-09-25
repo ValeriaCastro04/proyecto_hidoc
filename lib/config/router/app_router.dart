@@ -19,6 +19,7 @@ import 'package:proyecto_hidoc/features/user/screen/perfil_screen.dart';
 
 //page reutilizable de paciente
 import 'package:proyecto_hidoc/features/user/pages/doctores_disponibles.dart';
+import 'package:proyecto_hidoc/features/user/pages/pago_page.dart';
 
 
 final GoRouter appRouter = GoRouter(
@@ -61,6 +62,19 @@ final GoRouter appRouter = GoRouter(
         ),
       ],
     ),
+    GoRoute(
+  path: '/pago',
+  name: PagoPage.name,
+  builder: (context, state) {
+    // lee query params: ?concept=Consulta%20m%C3%A9dica&amount=8&type=consulta
+    final qp = state.uri.queryParameters;
+    final concept = qp['concept'] ?? 'Consulta médica';
+    final amount = double.tryParse(qp['amount'] ?? '') ?? 8.0;
+    final kind = (qp['type'] == 'membresia') ? PaymentKind.membresia : PaymentKind.consulta;
+
+    return PagoPage(concept: concept, amount: amount, kind: kind);
+  },
+),
   GoRoute(
     path: '/historial',
     name: 'HistorialUser',

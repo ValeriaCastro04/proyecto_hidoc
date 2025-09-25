@@ -4,6 +4,7 @@ import 'package:proyecto_hidoc/common/shared_widgets/footer.dart';
 import 'package:proyecto_hidoc/features/user/widgets/footer_user.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:go_router/go_router.dart';
+import 'package:proyecto_hidoc/features/user/pages/pago_page.dart'; 
 
 // —— Ejemplo de “repositorio” que luego puedes cambiar por API/DB —— //
 class Doctor {
@@ -223,9 +224,24 @@ class _DoctorCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Text('\$${doctor.precio}', style: tt.titleMedium?.copyWith(color: cs.primary, fontWeight: FontWeight.w800)),
+              Text('\$${doctor.precio}', 
+              style: tt.titleMedium?.copyWith(
+                color: cs.primary, 
+                fontWeight: FontWeight.w800)),
               const SizedBox(height: 8),
-              FilledButton(onPressed: onTap, child: const Text('Consultar')),
+              FilledButton(
+                  onPressed: () {
+                    context.pushNamed(            
+                      PagoPage.name,
+                      queryParameters: {
+                        'concept': 'Consulta médica',
+                        'amount': doctor.precio.toString(),
+                        'type': 'consulta',
+                      },
+                    );
+                  },
+                  child: const Text('Consultar'),
+),
             ]),
           ],
         ),
