@@ -36,7 +36,7 @@ class HomeDoctorScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 88),
+            padding: const EdgeInsets.only(bottom: 0),
             child: Column(
               children: [
                 HomeHeader(),
@@ -52,7 +52,6 @@ class HomeDoctorScreen extends StatelessWidget {
                         ),
                       ),
                       RecentActivityCard(activities: activities),
-                      // Aquí puedes añadir más widgets específicos para el doctor
                       const SizedBox(height: 20),
                       OutlineButtonGrid(
                         title: 'Acciones Rápidas',
