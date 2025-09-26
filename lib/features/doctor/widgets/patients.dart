@@ -1,4 +1,4 @@
-final List<Map<String, String>> mockPatients = [
+final List<Map<String, String>> Patients = [
   {
     "name": "Juan Carlos Pérez Gómez",
     "initials": "JP",
