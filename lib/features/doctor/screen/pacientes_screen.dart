@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/component/patient_item_list.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/patient_item_list.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/footer_doctor.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/patients.dart';
 
