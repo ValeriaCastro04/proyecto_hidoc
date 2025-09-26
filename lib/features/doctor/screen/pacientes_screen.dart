@@ -80,12 +80,11 @@ class _PacientesScreenState extends State<PacientesScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 filled: true,
-                // Cambia el color según el foco
                 fillColor: Theme.of( context).colorScheme.secondaryContainer,
               ),
             ),
           ),
-          // Lista de pacientes filtrada
+          // Lista de pacientes
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.only(bottom: 10.0),
