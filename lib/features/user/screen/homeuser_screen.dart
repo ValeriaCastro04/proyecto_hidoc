@@ -3,6 +3,7 @@ import 'package:proyecto_hidoc/features/user/widgets/footer_user.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer.dart';
 import 'package:proyecto_hidoc/features/user/widgets/quick_actions_user.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/gradient_background.dart';
 
 class HomeUserScreen extends StatelessWidget {
   static const String name = 'HomeUser';
@@ -29,32 +30,32 @@ class HomeUserScreen extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            // 👇 espacio inferior para que no se oculte el contenido
-            padding: const EdgeInsets.only(bottom: 88),
+  top: false,
+  child: SingleChildScrollView(
+    child: GradientBackground(
+      padding: const EdgeInsets.only(bottom: 88), // altura footer + margen
+      child: Column(
+        children: [
+          _HomeHeader(), // tu header con gradiente propio se mantiene
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
               children: [
-                _HomeHeader(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    children: [
-                      Transform.translate(
-                        offset: const Offset(0, -30),
-                        child: _QuickActionsCard(),
-                      ),
-                      const SizedBox(height: 8),
-                      _RecentActivityCard(),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+                Transform.translate(
+                  offset: const Offset(0, -30),
+                  child: _QuickActionsCard(),
                 ),
+                const SizedBox(height: 8),
+                _RecentActivityCard(),
+                const SizedBox(height: 24),
               ],
             ),
           ),
-        ),
+        ],
       ),
+    ),
+  ),
+),
       bottomNavigationBar: Footer(
         buttons: userFooterButtons(context, current: UserTab.home),
       ),
