@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 final List<Widget> doctorButtons = [
       OutlineButton(
         onPressed: () {
-          print('Nueva Receta');
+          print('Nueva Cita');
         },
-        text: 'Nueva Receta',
-        icon: Icons.description,
+        text: 'Nueva Cita',
+        icon: Icons.note_add,
       ),
       OutlineButton(
         onPressed: () {

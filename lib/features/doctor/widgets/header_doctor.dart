@@ -24,7 +24,7 @@ class HomeHeader extends StatelessWidget {
         children: [
           const SizedBox(height: 4),
           Text(
-            'Buenas noches, Dra.',
+            '¡Hola, Doctor!',
             style: theme.textTheme.headlineMedium?.copyWith(
               color: colorScheme.onPrimary,
               fontWeight: FontWeight.bold,

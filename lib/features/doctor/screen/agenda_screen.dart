@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/appointments.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/footer_doctor.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/appointments.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/patients.dart';
 
 class AgendaScreen extends StatefulWidget {
   static const String name = 'agenda_screen';
@@ -97,11 +98,11 @@ class _AgendaScreenState extends State<AgendaScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final appointments = _getAppointmentsForDay(_selectedDay);
-
+    final String name = 'Dra. Elena Martínez';
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
-        title: 'Dra. Elena Martínez',
+        title: name,
         actions: [
           IconButton(
             onPressed: () {},
@@ -114,7 +115,9 @@ class _AgendaScreenState extends State<AgendaScreen> {
           CircleAvatar(
             backgroundColor: colors.primary,
             foregroundColor: colors.onPrimary,
-            child: const Text('EM'),
+            child: Text(
+              name.split(' ').map((e) => e[0]).take(2).join(),
+            ),
           ),
           const SizedBox(width: 16),
         ],
@@ -192,7 +195,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          appointment['patientName'],
+                          Patients[appointment['patientId']]['name']!,
                           style: TextStyle(
                             color: colors.onPrimary,
                             fontWeight: FontWeight.bold,

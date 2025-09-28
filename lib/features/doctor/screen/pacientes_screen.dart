@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/patient_item_list.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/footer_doctor.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/patients.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/patients.dart';
 
 class PacientesScreen extends StatefulWidget {
   static const String name = 'pacientes_screen';
@@ -46,10 +46,12 @@ class _PacientesScreenState extends State<PacientesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;    
+    const String name = 'Dra. Elena Martínez';
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
-        title: 'Dra. Elena Martínez',
+        title: name,
         actions: [
           IconButton(
             onPressed: () {},
@@ -58,9 +60,11 @@ class _PacientesScreenState extends State<PacientesScreen> {
           ),
           const SizedBox(width: 8),
           CircleAvatar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            child: const Text('EM'),
+            backgroundColor: colors.primary,
+            foregroundColor: colors.onPrimary,
+            child: Text(
+              name.split(' ').map((e) => e[0]).take(2).join(),
+            ),
           ),
           const SizedBox(width: 16),
         ],

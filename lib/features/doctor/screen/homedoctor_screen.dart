@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/outline_button_grid.dart'; 
-import 'package:proyecto_hidoc/features/doctor/widgets/quick_actions_doctor.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/footer_doctor.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/quick_actions_doctor.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/header_doctor.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/summary_card.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/recent_activity.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/activities.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/activities.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/summary_card_list.dart';
 
 class HomeDoctorScreen extends StatelessWidget {
   static const String name = 'homedoctor_screen';
@@ -15,10 +16,12 @@ class HomeDoctorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    const String name = 'Dra. Elena Martínez';
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
-        title: 'Dra. Elena Martínez',
+        title: name,
         actions: [
           IconButton(
             onPressed: () {},
@@ -26,9 +29,11 @@ class HomeDoctorScreen extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           CircleAvatar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            child: const Text('EM'),
+            backgroundColor: colors.primary,
+            foregroundColor: colors.onPrimary,
+            child: Text(
+              name.split(' ').map((e) => e[0]).take(2).join(),
+            ),
           ),
           const SizedBox(width: 16),
         ],
@@ -46,10 +51,7 @@ class HomeDoctorScreen extends StatelessWidget {
                     children: [
                       Transform.translate(
                         offset: const Offset(0, -20),
-                        child: DoctorSummaryCard(
-                          todayConsults: 20,
-                          rating: 4.5,
-                        ),
+                        child: DoctorSummaryCard(items: summaryItems),
                       ),
                       RecentActivityCard(activities: activities),
                       const SizedBox(height: 20),
