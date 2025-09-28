@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:proyecto_hidoc/config/router/app_router.dart';
+import 'package:proyecto_hidoc/common/theme/app_theme.dart';
+import 'package:proyecto_hidoc/common/theme/theme_provider.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const ProviderScope(child: MainApp()));
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends ConsumerWidget {
   const MainApp({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(themeModeProvider);
     return MaterialApp.router(
       title: 'HiDoc!',
       routerConfig: appRouter,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Color(0XFF1d6bac)),
-      ),
+      theme: lightTheme,
+      darkTheme: darkTheme,
+      themeMode: mode, 
     );
   }
 }
