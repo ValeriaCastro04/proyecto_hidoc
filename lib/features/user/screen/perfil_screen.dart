@@ -3,6 +3,7 @@ import 'package:proyecto_hidoc/common/shared_widgets/footer.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/gradient_background.dart';
 import 'package:proyecto_hidoc/features/user/widgets/footer_user.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -26,6 +27,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         logoAsset: 'assets/brand/hidoc_logo.png',
         title: 'HiDoc!',
         actions: [
+          ThemeToggleButton(),
           IconButton(
             onPressed: () {},
             icon: Icon(Icons.notifications_none_rounded,

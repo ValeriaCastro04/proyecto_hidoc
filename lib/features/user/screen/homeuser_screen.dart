@@ -4,6 +4,7 @@ import 'package:proyecto_hidoc/common/shared_widgets/footer.dart';
 import 'package:proyecto_hidoc/features/user/widgets/quick_actions_user.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/gradient_background.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 class HomeUserScreen extends StatelessWidget {
   static const String name = 'HomeUser';
@@ -17,6 +18,7 @@ class HomeUserScreen extends StatelessWidget {
         logoAsset: 'assets/brand/hidoc_logo.png',
         title: 'HiDoc!',
         actions: [
+          ThemeToggleButton(), 
           IconButton(
             onPressed: () {},
             icon: Icon(Icons.notifications_none_rounded, color: Theme.of(context).colorScheme.onSurface),

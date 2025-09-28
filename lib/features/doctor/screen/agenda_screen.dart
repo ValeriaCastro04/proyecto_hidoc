@@ -4,6 +4,7 @@ import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/patients.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 class AgendaScreen extends StatefulWidget {
   static const String name = 'agenda_screen';
@@ -104,6 +105,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
         logoAsset: 'assets/brand/hidoc_logo.png',
         title: name,
         actions: [
+          ThemeToggleButton(), 
           IconButton(
             onPressed: () {},
             icon: Icon(

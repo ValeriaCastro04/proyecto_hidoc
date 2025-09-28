@@ -7,6 +7,7 @@ import 'package:proyecto_hidoc/features/doctor/widgets/list/summary_card_list.da
 import 'package:proyecto_hidoc/features/doctor/widgets/patient_comment.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/doctor_info_card.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/montly_income_card.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 class ReportesScreen extends StatelessWidget {
   static const String name = 'reportes_screen';
@@ -25,6 +26,7 @@ class ReportesScreen extends StatelessWidget {
         logoAsset: 'assets/brand/hidoc_logo.png',
         title: name,
         actions: [
+          ThemeToggleButton(), 
           IconButton(
             onPressed: () {},
             icon: Icon(
