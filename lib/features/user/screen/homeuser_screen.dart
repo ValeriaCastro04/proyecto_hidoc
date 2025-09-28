@@ -88,7 +88,7 @@ class _HomeHeader extends StatelessWidget {
           // 🔻 quitamos la fila con logo/acciones (ya está en el HeaderBar)
           const SizedBox(height: 4),
           Text(
-            'Buenas noches, Juan',
+            'Buenas noches, Juana',
             style: theme.textTheme.headlineMedium?.copyWith(
               color: colorScheme.onPrimary,
               fontWeight: FontWeight.bold,
