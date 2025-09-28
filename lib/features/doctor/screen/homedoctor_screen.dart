@@ -57,7 +57,7 @@ class HomeDoctorScreen extends StatelessWidget {
                       const SizedBox(height: 20),
                       OutlineButtonGrid(
                         title: 'Acciones Rápidas',
-                        buttons: doctorButtons,
+                        buttons: doctorButtons(context),
                       ),
                     ],
                   ),

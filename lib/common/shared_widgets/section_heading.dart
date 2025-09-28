@@ -9,8 +9,8 @@ class SectionHeading extends StatelessWidget {
     return Text(
       text,
       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-          ),
+        fontWeight: FontWeight.w800,
+      ),
     );
   }
 }

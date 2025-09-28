@@ -4,6 +4,7 @@ import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/patient_item_list.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/patients.dart';
+import 'patient_history_screen.dart';
 
 class PacientesScreen extends StatefulWidget {
   static const String name = 'pacientes_screen';
@@ -16,7 +17,7 @@ class PacientesScreen extends StatefulWidget {
 class _PacientesScreenState extends State<PacientesScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
-  List<Map<String, String>> filteredPatients = Patients;
+  List<Map<String, dynamic>> filteredPatients = Patients;
 
   @override
   void initState() {
@@ -97,10 +98,22 @@ class _PacientesScreenState extends State<PacientesScreen> {
                 final patient = filteredPatients[index];
                 return PatientListItem(
                   patientName: patient['name']!,
-                  initials: patient['initials']!,
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Abrir detalle de ${patient['name']}')),
+                    final history = (patient['historial'] as List<dynamic>)
+                        .map((e) => e as Map<String, dynamic>)
+                        .toList();                    
+                      Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PatientHistoryScreen(
+                          name: patient['name']!,
+                          initials: patient['initials']!,
+                          correo: patient['correo']!,
+                          telefono: patient['telefono']!,
+                          numero_DUI: patient['numero_DUI']!,
+                          history: history,
+                        ),
+                      ),
                     );
                   },
                 );

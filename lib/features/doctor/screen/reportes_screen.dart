@@ -5,7 +5,7 @@ import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/summary_card.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/summary_card_list.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/patient_comment.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/doctor_info_card.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/info_card.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/montly_income_card.dart';
 
 class ReportesScreen extends StatelessWidget {
