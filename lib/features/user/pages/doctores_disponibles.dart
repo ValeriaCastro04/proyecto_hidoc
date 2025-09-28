@@ -5,6 +5,7 @@ import 'package:proyecto_hidoc/features/user/widgets/footer_user.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:proyecto_hidoc/features/user/pages/pago_page.dart'; 
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 // —— Ejemplo de “repositorio” que luego puedes cambiar por API/DB —— //
 class Doctor {
@@ -64,17 +65,14 @@ class DoctoresDisponiblesPage extends StatelessWidget {
 
     return Scaffold(
       appBar: HeaderBar.category(
-          title: category.title, // p.ej. "Consulta General"
-          subtitle: 'Consultas médicas generales y evaluaciones de salud',
-          icon: Icons.medical_services_rounded,
-          onBack: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/consultas');
-            }
-          },
-        ),
+        title: category.title,
+        subtitle: 'Consultas médicas generales y evaluaciones de salud',
+        icon: Icons.medical_services_rounded,
+        onBack: () {
+          if (context.canPop()) context.pop(); else context.go('/consultas');
+        },
+        actions: const [ ThemeToggleButton() ], 
+      ),
       body: SafeArea(
         child: FutureBuilder<List<Doctor>>(
           future: repo.getByCategory(category),

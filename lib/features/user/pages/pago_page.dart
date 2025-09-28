@@ -5,18 +5,20 @@ import 'package:proyecto_hidoc/common/shared_widgets/footer.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/payment_summary_card.dart';
 import 'package:proyecto_hidoc/features/user/widgets/footer_user.dart';
-import 'dart:async';
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
+import 'package:proyecto_hidoc/features/user/pages/pago_exitoso_page.dart';
 
 enum PaymentKind { consulta, membresia }
+
 enum PayMethod { card, tigo }
 
 class PagoPage extends StatefulWidget {
   static const String name = 'Pago';
 
-  final String concept;     // Ej: "Consulta médica" o "Membresía Premium"
-  final double amount;      // Ej: 8.0
-  final PaymentKind kind;   // consulta | membresia
-  final Duration holdTime;  // tiempo para pagar (countdown)
+  final String concept; // Ej: "Consulta médica" o "Membresía Premium"
+  final double amount; // Ej: 8.0
+  final PaymentKind kind; // consulta | membresia
+  final Duration holdTime; // tiempo para pagar (countdown)
 
   const PagoPage({
     super.key,
@@ -64,7 +66,6 @@ class _PagoPageState extends State<PagoPage> {
     });
   }
 
-
   @override
   void dispose() {
     timer?.cancel();
@@ -100,6 +101,7 @@ class _PagoPageState extends State<PagoPage> {
         onBack: () {
           if (context.canPop()) context.pop();
         },
+        actions: [ThemeToggleButton()],
       ),
 
       body: SafeArea(
@@ -113,19 +115,33 @@ class _PagoPageState extends State<PagoPage> {
                 // Banner de tiempo
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 14,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.yellow.shade200,
+                    color: const Color.fromARGB(255, 12, 171, 168),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.yellow.shade700.withOpacity(.5)),
+                    border: Border.all(
+                      color: Colors.green.shade700.withOpacity(.5),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Tiempo restante para pagar la ${widget.kind == PaymentKind.consulta ? 'cita' : 'membresía'}:',
-                          style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+                      Text(
+                        'Tiempo restante para pagar la ${widget.kind == PaymentKind.consulta ? 'cita' : 'membresía'}:',
+                        style: tt.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                       const SizedBox(height: 6),
-                      Text(_mmss(remaining), style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+                      Text(
+                        _mmss(remaining),
+                        style: tt.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -135,7 +151,11 @@ class _PagoPageState extends State<PagoPage> {
                 PaymentSummaryCard(
                   title: 'Resumen del Pago',
                   lines: [
-                    PaymentLine(label: widget.concept, value: _money(widget.amount), bold: true),
+                    PaymentLine(
+                      label: widget.concept,
+                      value: _money(widget.amount),
+                      bold: true,
+                    ),
                     PaymentLine.divider(),
                   ],
                   totalLabel: 'Total',
@@ -144,7 +164,10 @@ class _PagoPageState extends State<PagoPage> {
                 const SizedBox(height: 16),
 
                 // Método de pago
-                Text('Método de Pago', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                  'Método de Pago',
+                  style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 8),
 
                 // Selección
@@ -169,14 +192,23 @@ class _PagoPageState extends State<PagoPage> {
                         groupValue: method,
                         onChanged: (v) => setState(() => method = v!),
                         title: const Text('Tigo Money'),
-                        secondary: const Icon(Icons.account_balance_wallet_rounded),
+                        secondary: const Icon(
+                          Icons.account_balance_wallet_rounded,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                if (method == PayMethod.card) _CardForm(formKey: formKey, ctrlCard: ctrlCard, ctrlExp: ctrlExp, ctrlCvv: ctrlCvv, ctrlName: ctrlName),
+                if (method == PayMethod.card)
+                  _CardForm(
+                    formKey: formKey,
+                    ctrlCard: ctrlCard,
+                    ctrlExp: ctrlExp,
+                    ctrlCvv: ctrlCvv,
+                    ctrlName: ctrlName,
+                  ),
 
                 const SizedBox(height: 12),
 
@@ -190,12 +222,18 @@ class _PagoPageState extends State<PagoPage> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.verified_user_rounded, size: 20, color: Colors.green),
+                      const Icon(
+                        Icons.verified_user_rounded,
+                        size: 20,
+                        color: Colors.green,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Tu información está protegida con cifrado de seguridad.',
-                          style: tt.bodyMedium?.copyWith(color: Colors.green.shade800),
+                          style: tt.bodyMedium?.copyWith(
+                            color: Colors.green.shade800,
+                          ),
                         ),
                       ),
                     ],
@@ -210,15 +248,26 @@ class _PagoPageState extends State<PagoPage> {
                     onPressed: remaining == Duration.zero
                         ? null
                         : () {
-                            if (method == PayMethod.card && !(formKey.currentState?.validate() ?? false)) {
+                            if (method == PayMethod.card &&
+                                !(formKey.currentState?.validate() ?? false)) {
                               return;
                             }
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Pago de ${_money(widget.amount)} procesado (demo)')),
+                            // Demo: redirigir a confirmación
+                            context.goNamed(
+                              PagoExitosoPage.name,
+                              queryParameters: {
+                                'concept': widget.concept,
+                                'amount': widget.amount.toString(),
+                                'doctor':
+                                    'Dra. Elena Martinez', // TODO: pasar el real
+                                'id': 'CITA-000123', // TODO: id real de la cita
+                                'metodo': method == PayMethod.card
+                                    ? 'Tarjeta **** 3456'
+                                    : 'Tigo Money',
+                              },
                             );
-                            // TODO: lógica real de pago + navegar a éxito
                           },
-                    child: Text('Pagar ${_money(widget.amount)}'),
+                    child: Text('Pagar \$${widget.amount.toStringAsFixed(2)}'),
                   ),
                 ),
               ],
@@ -255,27 +304,31 @@ class _CardForm extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     InputDecoration deco(String label, {String? hint}) => InputDecoration(
-          labelText: label,
-          hintText: hint,
-          filled: true,
-          fillColor: cs.primary.withOpacity(.06),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        );
+      labelText: label,
+      hintText: hint,
+      filled: true,
+      fillColor: cs.primary.withOpacity(.06),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    );
 
     return Form(
       key: formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Información de tarjeta', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+          Text(
+            'Información de tarjeta',
+            style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 8),
 
           TextFormField(
             controller: ctrlCard,
             keyboardType: TextInputType.number,
             decoration: deco('Número de Tarjeta', hint: '1234 5678 9012 3456'),
-            validator: (v) => (v == null || v.trim().length < 12) ? 'Número inválido' : null,
+            validator: (v) =>
+                (v == null || v.trim().length < 12) ? 'Número inválido' : null,
           ),
           const SizedBox(height: 10),
 
@@ -286,7 +339,10 @@ class _CardForm extends StatelessWidget {
                   controller: ctrlExp,
                   keyboardType: TextInputType.datetime,
                   decoration: deco('Fecha de Vencimiento', hint: 'MM/AA'),
-                  validator: (v) => (v == null || !RegExp(r'^\d{2}/\d{2}$').hasMatch(v)) ? 'Fecha inválida' : null,
+                  validator: (v) =>
+                      (v == null || !RegExp(r'^\d{2}/\d{2}$').hasMatch(v))
+                      ? 'Fecha inválida'
+                      : null,
                 ),
               ),
               const SizedBox(width: 10),
@@ -295,7 +351,8 @@ class _CardForm extends StatelessWidget {
                   controller: ctrlCvv,
                   keyboardType: TextInputType.number,
                   decoration: deco('CVV', hint: '123'),
-                  validator: (v) => (v == null || v.length < 3) ? 'CVV inválido' : null,
+                  validator: (v) =>
+                      (v == null || v.length < 3) ? 'CVV inválido' : null,
                   obscureText: true,
                 ),
               ),
@@ -306,8 +363,9 @@ class _CardForm extends StatelessWidget {
           TextFormField(
             controller: ctrlName,
             textCapitalization: TextCapitalization.words,
-            decoration: deco('Nombre en la Tarjeta', hint: 'Juan Pérez'),
-            validator: (v) => (v == null || v.trim().isEmpty) ? 'Ingrese el nombre' : null,
+            decoration: deco('Nombre en la Tarjeta', hint: 'Juana Pérez'),
+            validator: (v) =>
+                (v == null || v.trim().isEmpty) ? 'Ingrese el nombre' : null,
           ),
         ],
       ),

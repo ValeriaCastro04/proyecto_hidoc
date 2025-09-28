@@ -3,6 +3,7 @@ import 'package:proyecto_hidoc/common/shared_widgets/footer.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/features/user/widgets/footer_user.dart';
 import 'package:proyecto_hidoc/features/user/widgets/quick_actions_user.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 class ConsultasScreen extends StatelessWidget {
   const ConsultasScreen({super.key});
@@ -18,6 +19,7 @@ class ConsultasScreen extends StatelessWidget {
         logoAsset: 'assets/brand/hidoc_logo.png',
         title: 'HiDoc!',
         actions: [
+          ThemeToggleButton(), 
           IconButton(
             onPressed: () {},
             icon: Icon(

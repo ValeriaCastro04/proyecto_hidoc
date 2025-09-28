@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+/// AppBar reutilizable con dos variantes:
+/// - HeaderBar.brand(...): logo + (opcional) título + acciones
+/// - HeaderBar.category(...): botón atrás + tarjeta de categoría + acciones
 class HeaderBar extends StatelessWidget implements PreferredSizeWidget {
   final double height;
   final Widget child;
 
   const HeaderBar._({
+    super.key,
     required this.child,
     required this.height,
-    super.key,
   });
 
-  /// Header de marca: logo + acciones (Inicio)
+  /// Variante para pantallas de marca (ej. Home/Consultas/Perfil)
   factory HeaderBar.brand({
     required String logoAsset,
     String? title,
@@ -29,35 +32,36 @@ class HeaderBar extends StatelessWidget implements PreferredSizeWidget {
                 const SizedBox(width: 8),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ],
           ),
           const Spacer(),
-          ...(actions ?? []),
+          ...(actions ?? const []),
         ],
       ),
     );
   }
 
-  /// Header de categoría: botón atrás + tarjeta (icono, título, subtítulo)
-  /// Altura mayor para permitir 2 líneas sin recortes
+  /// Variante para pantallas de categoría (ej. Búsqueda de médicos, Pago)
+  /// [onBack]: acción personalizada al retroceder (opcional)
+  /// [fallbackPath]: ruta a la que se navega si no hay stack para hacer pop
   factory HeaderBar.category({
     required String title,
     String? subtitle,
     IconData icon = Icons.medical_services_rounded,
     VoidCallback? onBack,
+    String fallbackPath = '/',
+    List<Widget>? actions,
+    double height = 124,
   }) {
     return HeaderBar._(
-      height: 124,
+      height: height,
       child: Row(
         children: [
-          _BackCircleButton(onBack: onBack),
+          _BackCircleButton(onBack: onBack, fallbackPath: fallbackPath),
           const SizedBox(width: 12),
           Expanded(
             child: _CategoryTile(
@@ -66,6 +70,10 @@ class HeaderBar extends StatelessWidget implements PreferredSizeWidget {
               subtitle: subtitle,
             ),
           ),
+          if (actions != null && actions.isNotEmpty) ...[
+            const SizedBox(width: 8),
+            ...actions,
+          ],
         ],
       ),
     );
@@ -76,7 +84,7 @@ class HeaderBar extends StatelessWidget implements PreferredSizeWidget {
     final cs = Theme.of(context).colorScheme;
     return Material(
       color: cs.surface,
-      elevation: 3,
+      elevation: 3, // separa visualmente del contenido
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -93,7 +101,9 @@ class HeaderBar extends StatelessWidget implements PreferredSizeWidget {
 
 class _BackCircleButton extends StatelessWidget {
   final VoidCallback? onBack;
-  const _BackCircleButton({this.onBack});
+  final String fallbackPath;
+
+  const _BackCircleButton({this.onBack, this.fallbackPath = '/'});
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +114,7 @@ class _BackCircleButton extends StatelessWidget {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/');
+              context.go(fallbackPath);
             }
           },
       borderRadius: BorderRadius.circular(999),
@@ -125,7 +135,12 @@ class _CategoryTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
-  const _CategoryTile({required this.icon, required this.title, this.subtitle});
+
+  const _CategoryTile({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +157,7 @@ class _CategoryTile extends StatelessWidget {
             color: Colors.black.withOpacity(.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       padding: const EdgeInsets.all(16),
@@ -160,6 +175,7 @@ class _CategoryTile extends StatelessWidget {
             child: Icon(icon, color: cs.primary),
           ),
           const SizedBox(width: 12),
+          // Texto con control de overflow
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

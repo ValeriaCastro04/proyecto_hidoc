@@ -9,6 +9,7 @@ import 'package:proyecto_hidoc/features/doctor/widgets/summary_card.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/recent_activity.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/activities.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/summary_card_list.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 class HomeDoctorScreen extends StatelessWidget {
   static const String name = 'homedoctor_screen';
@@ -23,6 +24,7 @@ class HomeDoctorScreen extends StatelessWidget {
         logoAsset: 'assets/brand/hidoc_logo.png',
         title: name,
         actions: [
+          ThemeToggleButton(), 
           IconButton(
             onPressed: () {},
             icon: Icon(Icons.notifications_none_rounded, color: Theme.of(context).colorScheme.onSurface),
