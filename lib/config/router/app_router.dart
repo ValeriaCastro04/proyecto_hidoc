@@ -16,11 +16,11 @@ import 'package:proyecto_hidoc/features/user/screen/homeuser_screen.dart';
 import 'package:proyecto_hidoc/features/user/screen/consultas_screen.dart';
 import 'package:proyecto_hidoc/features/user/screen/historial_screen.dart';
 import 'package:proyecto_hidoc/features/user/screen/perfil_screen.dart';
+import 'package:proyecto_hidoc/features/user/pages/pago_exitoso_page.dart';
 
 //page reutilizable de paciente
 import 'package:proyecto_hidoc/features/user/pages/doctores_disponibles.dart';
 import 'package:proyecto_hidoc/features/user/pages/pago_page.dart';
-
 
 final GoRouter appRouter = GoRouter(
   // 👇 que arranque en la pantalla de bienvenida
@@ -43,10 +43,10 @@ final GoRouter appRouter = GoRouter(
     ),
     // ================== PACIENTE ==================
     GoRoute(
-    path: '/home_user',
-    name: HomeUserScreen.name,
-    builder: (context, state) => const HomeUserScreen(),
-  ),
+      path: '/home_user',
+      name: HomeUserScreen.name,
+      builder: (context, state) => const HomeUserScreen(),
+    ),
     GoRoute(
       path: '/consultas',
       name: 'ConsultasUser',
@@ -63,30 +63,52 @@ final GoRouter appRouter = GoRouter(
       ],
     ),
     GoRoute(
-  path: '/pago',
-  name: PagoPage.name,
-  builder: (context, state) {
-    // lee query params: ?concept=Consulta%20m%C3%A9dica&amount=8&type=consulta
-    final qp = state.uri.queryParameters;
-    final concept = qp['concept'] ?? 'Consulta médica';
-    final amount = double.tryParse(qp['amount'] ?? '') ?? 8.0;
-    final kind = (qp['type'] == 'membresia') ? PaymentKind.membresia : PaymentKind.consulta;
+      path: '/pago',
+      name: PagoPage.name,
+      builder: (context, state) {
+        // lee query params: ?concept=Consulta%20m%C3%A9dica&amount=8&type=consulta
+        final qp = state.uri.queryParameters;
+        final concept = qp['concept'] ?? 'Consulta médica';
+        final amount = double.tryParse(qp['amount'] ?? '') ?? 8.0;
+        final kind = (qp['type'] == 'membresia')
+            ? PaymentKind.membresia
+            : PaymentKind.consulta;
 
-    return PagoPage(concept: concept, amount: amount, kind: kind);
-  },
-),
-  GoRoute(
-    path: '/historial',
-    name: 'HistorialUser',
-    builder: (context, state) => const HistorialScreen(),
-  ),
-  GoRoute(
-    path: '/perfil',
-    name: 'PerfilUser',
-    builder: (context, state) => const PerfilScreen(),
-  ),
+        return PagoPage(concept: concept, amount: amount, kind: kind);
+      },
+    ),
 
-  // ================== DOCTOR ==================
+    GoRoute(
+      path: '/pago-exitoso',
+      name: PagoExitosoPage.name,
+      builder: (context, state) {
+        final qp = state.uri.queryParameters;
+        final concept = qp['concept'] ?? 'Consulta médica';
+        final amount = double.tryParse(qp['amount'] ?? '') ?? 8.0;
+        final doctor = qp['doctor'] ?? 'Dr. María López';
+        final id = qp['id'] ?? 'CITA-000001';
+        final metodo = qp['metodo']; // opcional
+        return PagoExitosoPage(
+          concept: concept,
+          amount: amount,
+          doctorName: doctor,
+          appointmentId: id,
+          metodo: metodo,
+        );
+      },
+    ),
+    GoRoute(
+      path: '/historial',
+      name: 'HistorialUser',
+      builder: (context, state) => const HistorialScreen(),
+    ),
+    GoRoute(
+      path: '/perfil',
+      name: 'PerfilUser',
+      builder: (context, state) => const PerfilScreen(),
+    ),
+
+    // ================== DOCTOR ==================
     GoRoute(
       path: '/home_doctor',
       name: HomeDoctorScreen.name,

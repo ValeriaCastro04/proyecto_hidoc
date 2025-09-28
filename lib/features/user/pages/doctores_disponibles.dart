@@ -71,7 +71,7 @@ class DoctoresDisponiblesPage extends StatelessWidget {
         onBack: () {
           if (context.canPop()) context.pop(); else context.go('/consultas');
         },
-        actions: const [ ThemeToggleButton() ], // ⬅️ aquí
+        actions: const [ ThemeToggleButton() ], 
       ),
       body: SafeArea(
         child: FutureBuilder<List<Doctor>>(
