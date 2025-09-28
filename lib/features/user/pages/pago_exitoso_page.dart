@@ -148,14 +148,6 @@ class PagoExitosoPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.home_rounded),
-                    label: const Text('Volver al inicio'),
-                    onPressed: () => context.go('/home_user'),
-                  ),
-                ),
               ],
             ),
           ),
