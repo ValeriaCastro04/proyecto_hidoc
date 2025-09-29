@@ -6,6 +6,7 @@ import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/patients.dart';
 import 'patient_history_screen.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/doctor.dart';
 
 class PacientesScreen extends StatefulWidget {
   static const String name = 'pacientes_screen';
@@ -48,12 +49,13 @@ class _PacientesScreenState extends State<PacientesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;    
-    const String name = 'Dra. Elena Martínez';
+    final colors = Theme.of(context).colorScheme;  
+    final doctor = Doctor;  
+    final String doctorName = doctor[0]['name'];
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
-        title: name,
+        title: doctor[0]['name'],
         actions: [
           ThemeToggleButton(), 
           IconButton(
@@ -66,7 +68,7 @@ class _PacientesScreenState extends State<PacientesScreen> {
             backgroundColor: colors.primary,
             foregroundColor: colors.onPrimary,
             child: Text(
-              name.split(' ').map((e) => e[0]).take(2).join(),
+              doctorName.split(' ').map((e) => e[0]).take(2).join(),
             ),
           ),
           const SizedBox(width: 16),
