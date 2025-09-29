@@ -10,7 +10,7 @@ import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/doctor.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/doctor_infor.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/doctor_schedule.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/doctor_studies.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/doctor_diploma.dart';
 
 class ReportesScreen extends StatelessWidget {
   static const String name = 'reportes_screen';

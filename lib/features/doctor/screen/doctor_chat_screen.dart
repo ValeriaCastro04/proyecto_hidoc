@@ -467,9 +467,10 @@ class DoctorChatHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      color: Colors.white,
+      color: colors.onPrimary,
       child: SafeArea(
         bottom: false,
         child: Row(
@@ -479,8 +480,9 @@ class DoctorChatHeader extends StatelessWidget {
               icon: const Icon(Icons.arrow_back),
             ),
             CircleAvatar(
-              backgroundColor: Colors.blue,
-              child: Text(patientInitials, style: const TextStyle(color: Colors.white)),
+              radius: 28,
+              backgroundColor: colors.primary.withOpacity(.15),
+              child: Icon(Icons.person, color: colors.primary),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -488,7 +490,7 @@ class DoctorChatHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(patientName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const Text('Paciente', style: TextStyle(color: Colors.grey)),
+                  const Text('Paciente'),
                 ],
               ),
             ),
@@ -514,12 +516,15 @@ class DoctorChatTabNavigator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.onPrimary,
         borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: colors.outline.withOpacity(.15))
       ),
       child: Row(
         children: DoctorChatTab.values.map((tab) {
@@ -543,13 +548,14 @@ class DoctorChatTabNavigator extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: isActive ? Colors.yellow[300] : Colors.transparent,
+                  color: isActive ? colors.onPrimaryFixedVariant : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Center(
                   child: Text(
                     tabName,
                     style: TextStyle(
+                      color: isActive ? colors.onPrimary : colors.onBackground,
                       fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                       fontSize: 12,
                     ),
@@ -578,8 +584,10 @@ class DoctorMessageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
-      color: Colors.blue[100],
+      color: colors.secondaryContainer,
       child: ListView.builder(
         reverse: true,
         itemCount: messages.length,
@@ -610,6 +618,8 @@ class DoctorChatMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
@@ -619,7 +629,7 @@ class DoctorChatMessageBubble extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isFromDoctor ? Colors.blue : Colors.grey[200],
+                color: isFromDoctor ? colors.onPrimaryFixedVariant : colors.primaryFixedDim,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -651,10 +661,11 @@ class DoctorChatInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final controller = TextEditingController();
     return Container(
       padding: const EdgeInsets.all(16),
-      color: Colors.white,
+      color: colors.onPrimary,
       child: Row(
         children: [
           IconButton(onPressed: onAttachFile, icon: const Icon(Icons.attach_file)),
@@ -664,8 +675,11 @@ class DoctorChatInput extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Escriba su mensaje médico...',
                 filled: true,
-                fillColor: Colors.yellow[300],
+                fillColor: colors.secondaryContainer,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
+                hintStyle: TextStyle(
+                  color: colors.onSurfaceVariant
+                )
               ),
             ),
           ),
@@ -700,30 +714,50 @@ class DoctorBottomActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
-      color: Colors.white,
+      color: colors.onPrimary,
       child: Row(
         children: [
           Expanded(
             child: OutlinedButton(
               onPressed: onRecetaPressed,
-              child: const Text('Receta'),
+              child: Text(
+                  'Receta',
+                  style: TextStyle(
+                    color: colors.onBackground, 
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: OutlinedButton(
               onPressed: onNotaPressed,
-              child: const Text('Nota Médica'),
+              child: Text(
+                'Nota Médica',
+                style: TextStyle(
+                    color: colors.onBackground, 
+                    fontWeight: FontWeight.bold,
+                  ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: ElevatedButton(
               onPressed: onFinalizarPressed,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: const Text('Finalizar'),
+              style: ElevatedButton.styleFrom(backgroundColor: colors.primaryContainer),
+              child: Text(
+                  'Finalizar',
+                  style: TextStyle(
+                    color: colors.onBackground, 
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
             ),
           ),
         ],
