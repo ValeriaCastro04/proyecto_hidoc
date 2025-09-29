@@ -174,21 +174,12 @@ class _SectionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-<<<<<<< HEAD
               title,
                 style: text.titleMedium?.copyWith(
                   color: colors.primary,
                   fontWeight: FontWeight.w800,
                 )
               ),
-=======
-            title,
-            style: text.titleMedium?.copyWith(
-              color: colors.primary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
->>>>>>> a115842832fd6335971a1d830ab59393d692cccf
           const SizedBox(height: 12),
           child,
         ],
