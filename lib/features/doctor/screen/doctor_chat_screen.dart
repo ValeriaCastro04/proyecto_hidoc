@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 /// Pantalla completa del chat médico para el doctor
 class DoctorChatScreen extends StatefulWidget {
@@ -358,6 +359,7 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
         logoAsset: 'assets/brand/hidoc_logo.png',
         title: doctorName,
         actions: [
+          const ThemeToggleButton(),
           IconButton(
             onPressed: () {},
             icon: Icon(Icons.notifications_none_rounded, color: colors.onSurface),

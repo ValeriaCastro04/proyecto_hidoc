@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/features/user/widgets/footer_user.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 /// Pantalla de historial médico para el paciente
 class PatientMedicalHistoryScreen extends StatelessWidget {
@@ -19,6 +20,7 @@ class PatientMedicalHistoryScreen extends StatelessWidget {
         logoAsset: 'assets/brand/hidoc_logo.png',
         title: 'Mi Historial',
         actions: [
+          ThemeToggleButton(), 
           IconButton(
             onPressed: () {},
             icon: Icon(Icons.notifications_none_rounded, color: cs.onSurface),
@@ -57,12 +59,12 @@ class PatientMedicalHistoryScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Juan Carlos Pérez Gómez',
+                                'Juana Carla Pérez Gómez',
                                 style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'juan.perez@ejemplo.com',
+                                'juana.perez@ejemplo.com',
                                 style: tt.bodyMedium?.copyWith(
                                   color: cs.onSurface.withOpacity(.7),
                                 ),

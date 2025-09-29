@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 /// Widget para el header del chat médico
 /// 
@@ -177,6 +178,7 @@ class ChatHeader extends StatelessWidget {
                     size: 24,
                   ),
                 ),
+                const ThemeToggleButton(),
               ],
             ),
           ],
