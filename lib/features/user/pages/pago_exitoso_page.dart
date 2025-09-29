@@ -134,18 +134,34 @@ class PagoExitosoPage extends StatelessWidget {
                 // Acciones
                 SizedBox(
                   width: double.infinity,
-                  child: FilledButton.icon(
-                    icon: const Icon(Icons.forum_rounded),
-                    label: const Text('Iniciar consulta ahora'),
-                    onPressed: () {
-                      // TODO: Navegar a sala de consulta real. Por ahora, demo:
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Abrir sala de consulta ($appointmentId)')),
-                      );
-                      // Ej futuro:
-                      // context.pushNamed('ConsultaRoom', pathParameters: {'id': appointmentId});
+                  child: ElevatedButton(
+                    onPressed: (){
+                      context.push('/chat', extra: {
+                        'doctorId': 'dr_001',
+                        'doctorName': 'Dr Lopez',
+                        'doctorInitials': 'Dr L',
+                      });
                     },
-                  ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.chat, color: Colors.white),
+                        SizedBox(width: 8,),
+                        Text(
+                          'Iniciar consulta ahora',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white
+                          )
+                        )
+                      ]
+                    )
+                    )
                 ),
                 const SizedBox(height: 10),
               ],
