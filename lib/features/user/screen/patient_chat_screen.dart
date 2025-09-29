@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 // Importaciones de los widgets que ya creamos
 // Nota: En tu proyecto real, asegúrate de importar estos widgets desde sus archivos correspondientes:
@@ -542,6 +543,7 @@ class ChatHeader extends StatelessWidget {
             IconButton(onPressed: onCallPressed, icon: const Icon(Icons.phone)),
             IconButton(onPressed: onVideoPressed, icon: const Icon(Icons.videocam)),
             IconButton(onPressed: onMenuPressed, icon: const Icon(Icons.more_vert)),
+            const ThemeToggleButton(),
           ],
         ),
       ),
