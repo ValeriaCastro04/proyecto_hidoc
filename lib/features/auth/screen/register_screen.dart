@@ -28,9 +28,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _password = TextEditingController();
   final _confirm = TextEditingController();
 
+  // NUEVO: controlador para identificación profesional (solo médico)
+  final _proId = TextEditingController();
+
   bool _obscure1 = true;
   bool _obscure2 = true;
   bool _accept = false;
+
+  // NUEVO: checkbox de afirmación (solo médico)
+  bool _affirmMed = false;
+
   UserRole _role = UserRole.patient;
 
   @override
@@ -39,6 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
+    _proId.dispose(); // NUEVO
     super.dispose();
   }
 
@@ -84,7 +92,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       context.goNamed(HomeUserScreen.name);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -209,6 +216,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             validator: _confirmValidator,
                           ),
 
+                          // NUEVO: Campo visible solo si rol = médico
+                          if (_role == UserRole.doctor) ...[
+                            const SizedBox(height: 12),
+                            IconTextField(
+                              controller: _proId,
+                              label: 'Número de identificación profesional',
+                              hint: 'Ej: 123456',
+                              icon: Icons.medical_information_rounded,
+                            ),
+                          ],
+
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -224,6 +242,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                             ],
                           ),
+
+                          // NUEVO: Checkbox adicional bajo T&C (solo médico)
+                          if (_role == UserRole.doctor) ...[
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: _affirmMed,
+                                  onChanged: (v) => setState(() => _affirmMed = v ?? false),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    'Afirmo que mi identificación profesional como médico está aprobado por la Junta de Vigilancia de la Profesión Médica.',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
 
                           const SizedBox(height: 12),
                           SolidButton(
