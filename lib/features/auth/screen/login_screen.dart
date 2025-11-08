@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
+
+import 'package:proyecto_hidoc/main.dart' show dioProvider, tokenStorageProvider;
 
 import 'package:proyecto_hidoc/common/layout/scroll_fill.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/app_logo.dart';
@@ -10,23 +14,29 @@ import 'package:proyecto_hidoc/common/global_widgets/solid_button.dart';
 
 import 'package:proyecto_hidoc/features/auth/screen/register_screen.dart';
 import 'package:proyecto_hidoc/features/doctor/screen/homedoctor_screen.dart';
-
 import 'package:proyecto_hidoc/features/user/screen/homeuser_screen.dart';
 
-class LoginScreen extends StatefulWidget {
+/// Enum que ya usas en tu toggle
+enum UserRole { patient, doctor }
+
+class LoginScreen extends ConsumerStatefulWidget {
   static const String name = 'Login';
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
 
   bool _obscure = true;
+  bool _loading = false;
+  String? _errorText;
+
+  // El toggle lo mantenemos para UX, pero el backend NO lo necesita para login
   UserRole _role = UserRole.patient;
 
   @override
@@ -49,15 +59,75 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
+  void _showSnack(String msg, {bool error = false}) {
+    final cs = Theme.of(context).colorScheme;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: error ? cs.error : cs.primary,
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Sin autenticación: redirige solo por rol
-    if (!mounted) return;
-    if (_role == UserRole.doctor) {
-      context.goNamed(HomeDoctorScreen.name);
-    } else {
-      context.goNamed(HomeUserScreen.name);
+    setState(() {
+      _loading = true;
+      _errorText = null;
+    });
+
+    final dio = ref.read(dioProvider);
+    final storage = ref.read(tokenStorageProvider);
+
+    try {
+      final res = await dio.post('/auth/login', data: {
+        'email': _email.text.trim(),
+        'password': _password.text,
+      });
+
+      final data = res.data as Map<String, dynamic>;
+      final access = data['access_token'] as String?;
+      final refresh = data['refresh_token'] as String?;
+      final user = Map<String, dynamic>.from(data['user'] as Map);
+
+      if (access == null || refresh == null) {
+        throw Exception('Respuesta inválida del servidor');
+      }
+
+      // Guardar tokens
+      await storage.save(access: access, refresh: refresh);
+
+      // Role desde backend (puede venir 'doctor', 'paciente', 'DOCTOR', etc.)
+      final role = (user['role'] as String?)?.toUpperCase() ?? 'PATIENT';
+
+      if (!mounted) return;
+      if (role == 'DOCTOR') {
+        context.goNamed(HomeDoctorScreen.name);
+      } else {
+        context.goNamed(HomeUserScreen.name);
+      }
+    } on DioException catch (e) {
+      // Mensaje amigable
+      final status = e.response?.statusCode;
+      String msg = 'Error de red';
+      if (status == 401) {
+        msg = 'Credenciales inválidas';
+      } else if (e.response?.data is Map &&
+          (e.response!.data as Map).containsKey('message')) {
+        final m = e.response!.data['message'];
+        msg = m is List ? m.join(', ') : m.toString();
+      }
+      setState(() => _errorText = msg);
+      _showSnack(msg, error: true);
+    } catch (e) {
+      const msg = 'Ocurrió un error al iniciar sesión';
+      setState(() => _errorText = msg);
+      _showSnack(msg, error: true);
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -102,8 +172,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 16),
 
-                          Text('Tipo de usuario:',
-                              style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
+                          // Toggle de rol (solo visual; login no lo usa)
+                          Text(
+                            'Tipo de usuario:',
+                            style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+                          ),
                           const SizedBox(height: 8),
                           SegmentedRoleToggle(
                             value: _role,
@@ -120,7 +193,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     backgroundColor: Colors.amber,
                                     foregroundColor: Colors.black87,
                                     elevation: 2,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
                                   onPressed: () {}, // ya estás en login
                                   child: const Text('Iniciar sesión',
@@ -132,9 +207,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: OutlinedButton(
                                   style: OutlinedButton.styleFrom(
                                     side: BorderSide(color: cs.outline.withOpacity(.35), width: 1.5),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
-                                  onPressed: () => context.pushNamed(RegisterScreen.name),
+                                  onPressed: _loading
+                                      ? null
+                                      : () => context.pushNamed(RegisterScreen.name),
                                   child: const Text('Registrarse',
                                       style: TextStyle(fontWeight: FontWeight.w700)),
                                 ),
@@ -151,6 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             icon: Icons.mail_rounded,
                             keyboardType: TextInputType.emailAddress,
                             validator: _emailValidator,
+                            enabled: !_loading,
                           ),
                           const SizedBox(height: 12),
 
@@ -160,15 +240,25 @@ class _LoginScreenState extends State<LoginScreen> {
                             hint: '•••••••',
                             icon: Icons.lock_rounded,
                             obscure: _obscure,
-                            onToggleObscure: () => setState(() => _obscure = !_obscure),
+                            onToggleObscure: () =>
+                                setState(() => _obscure = !_obscure),
                             validator: _passValidator,
+                            enabled: !_loading,
                           ),
+
+                          if (_errorText != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              _errorText!,
+                              style: TextStyle(color: cs.error),
+                            ),
+                          ],
 
                           const SizedBox(height: 18),
                           SolidButton(
-                            text: 'Iniciar sesión',
+                            text: _loading ? 'Ingresando...' : 'Iniciar sesión',
                             expand: true,
-                            onPressed: _submit,
+                            onPressed: _loading ? null : _submit,
                           ),
                         ],
                       ),
