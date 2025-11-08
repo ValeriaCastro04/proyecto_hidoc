@@ -1,23 +1,25 @@
+// lib/features/auth/screen/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 
+// Traemos los providers desde main.dart
 import 'package:proyecto_hidoc/main.dart' show dioProvider, tokenStorageProvider;
 
 import 'package:proyecto_hidoc/common/layout/scroll_fill.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/app_logo.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/auth_card.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/icon_text_field.dart';
-import 'package:proyecto_hidoc/common/shared_widgets/segmented_role_toggle.dart';
-import 'package:proyecto_hidoc/common/global_widgets/solid_button.dart';
 
+// Import del toggle con prefijo para usar su enum sin choques
+import 'package:proyecto_hidoc/common/shared_widgets/segmented_role_toggle.dart'
+    as seg;
+
+import 'package:proyecto_hidoc/common/global_widgets/solid_button.dart';
 import 'package:proyecto_hidoc/features/auth/screen/register_screen.dart';
 import 'package:proyecto_hidoc/features/doctor/screen/homedoctor_screen.dart';
 import 'package:proyecto_hidoc/features/user/screen/homeuser_screen.dart';
-
-/// Enum que ya usas en tu toggle
-enum UserRole { patient, doctor }
 
 class LoginScreen extends ConsumerStatefulWidget {
   static const String name = 'Login';
@@ -36,8 +38,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _loading = false;
   String? _errorText;
 
-  // El toggle lo mantenemos para UX, pero el backend NO lo necesita para login
-  UserRole _role = UserRole.patient;
+  // Usamos el enum del toggle
+  seg.UserRole _role = seg.UserRole.patient;
 
   @override
   void dispose() {
@@ -95,12 +97,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         throw Exception('Respuesta inválida del servidor');
       }
 
-      // Guardar tokens
       await storage.save(access: access, refresh: refresh);
 
-      // Role desde backend (puede venir 'doctor', 'paciente', 'DOCTOR', etc.)
       final role = (user['role'] as String?)?.toUpperCase() ?? 'PATIENT';
-
       if (!mounted) return;
       if (role == 'DOCTOR') {
         context.goNamed(HomeDoctorScreen.name);
@@ -108,7 +107,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         context.goNamed(HomeUserScreen.name);
       }
     } on DioException catch (e) {
-      // Mensaje amigable
       final status = e.response?.statusCode;
       String msg = 'Error de red';
       if (status == 401) {
@@ -120,14 +118,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
       setState(() => _errorText = msg);
       _showSnack(msg, error: true);
-    } catch (e) {
+    } catch (_) {
       const msg = 'Ocurrió un error al iniciar sesión';
       setState(() => _errorText = msg);
       _showSnack(msg, error: true);
     } finally {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -172,15 +168,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           const SizedBox(height: 16),
 
-                          // Toggle de rol (solo visual; login no lo usa)
                           Text(
                             'Tipo de usuario:',
-                            style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           const SizedBox(height: 8),
-                          SegmentedRoleToggle(
+                          // Toggle usa su propio enum y tipo
+                          seg.SegmentedRoleToggle(
                             value: _role,
-                            onChanged: (r) => setState(() => _role = r),
+                            onChanged: (seg.UserRole r) => setState(() => _role = r),
                           ),
 
                           const SizedBox(height: 16),
@@ -198,15 +196,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                   ),
                                   onPressed: () {}, // ya estás en login
-                                  child: const Text('Iniciar sesión',
-                                      style: TextStyle(fontWeight: FontWeight.w700)),
+                                  child: const Text(
+                                    'Iniciar sesión',
+                                    style: TextStyle(fontWeight: FontWeight.w700),
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: OutlinedButton(
                                   style: OutlinedButton.styleFrom(
-                                    side: BorderSide(color: cs.outline.withOpacity(.35), width: 1.5),
+                                    side: BorderSide(
+                                      color: cs.outline.withOpacity(.35),
+                                      width: 1.5,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
@@ -214,8 +217,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   onPressed: _loading
                                       ? null
                                       : () => context.pushNamed(RegisterScreen.name),
-                                  child: const Text('Registrarse',
-                                      style: TextStyle(fontWeight: FontWeight.w700)),
+                                  child: const Text(
+                                    'Registrarse',
+                                    style: TextStyle(fontWeight: FontWeight.w700),
+                                  ),
                                 ),
                               ),
                             ],
@@ -223,27 +228,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                           const SizedBox(height: 16),
 
-                          IconTextField(
-                            controller: _email,
-                            label: 'Correo electrónico',
-                            hint: 'tu@email.com',
-                            icon: Icons.mail_rounded,
-                            keyboardType: TextInputType.emailAddress,
-                            validator: _emailValidator,
-                            enabled: !_loading,
-                          ),
-                          const SizedBox(height: 12),
-
-                          IconTextField(
-                            controller: _password,
-                            label: 'Contraseña',
-                            hint: '•••••••',
-                            icon: Icons.lock_rounded,
-                            obscure: _obscure,
-                            onToggleObscure: () =>
-                                setState(() => _obscure = !_obscure),
-                            validator: _passValidator,
-                            enabled: !_loading,
+                          // No usamos `enabled` porque IconTextField no lo soporta.
+                          // En su lugar, ignoramos interacción si _loading = true.
+                          IgnorePointer(
+                            ignoring: _loading,
+                            child: Column(
+                              children: [
+                                IconTextField(
+                                  controller: _email,
+                                  label: 'Correo electrónico',
+                                  hint: 'tu@email.com',
+                                  icon: Icons.mail_rounded,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: _emailValidator,
+                                ),
+                                const SizedBox(height: 12),
+                                IconTextField(
+                                  controller: _password,
+                                  label: 'Contraseña',
+                                  hint: '•••••••',
+                                  icon: Icons.lock_rounded,
+                                  obscure: _obscure,
+                                  onToggleObscure: () =>
+                                      setState(() => _obscure = !_obscure),
+                                  validator: _passValidator,
+                                ),
+                              ],
+                            ),
                           ),
 
                           if (_errorText != null) ...[
