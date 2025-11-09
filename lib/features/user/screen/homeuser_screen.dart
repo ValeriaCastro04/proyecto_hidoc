@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
@@ -9,10 +10,10 @@ import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/gradient_background.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
-import 'package:proyecto_hidoc/services/api_client.dart'; // <- usa ApiClient.dio
+import 'package:proyecto_hidoc/services/api_client.dart';
 
 /* ===========================
-   Modelos livianos para la UI
+   Models
    =========================== */
 
 class MeProfile {
@@ -20,10 +21,38 @@ class MeProfile {
   final String fullName;
   MeProfile({required this.id, required this.fullName});
 
-  factory MeProfile.fromMap(Map<String, dynamic> j) => MeProfile(
-        id: (j['id'] ?? '') as String,
-        fullName: (j['fullName'] ?? j['name'] ?? '') as String,
-      );
+  /// Extrae name desde múltiples shapes: flat, {data:{}}, {user:{}}, snake_case, etc.
+  factory MeProfile.fromAny(dynamic raw) {
+    Map<String, dynamic> map;
+    if (raw is String) {
+      map = json.decode(raw) as Map<String, dynamic>;
+    } else {
+      map = raw as Map<String, dynamic>;
+    }
+
+    Map<String, dynamic> root = map;
+
+    // Si viene envuelto en {data:{...}}
+    if (root['data'] is Map<String, dynamic>) {
+      root = root['data'] as Map<String, dynamic>;
+    }
+    // Si viene envuelto en {user:{...}}
+    if (root['user'] is Map<String, dynamic>) {
+      root = root['user'] as Map<String, dynamic>;
+    }
+
+    final id = (root['id'] ?? root['_id'] ?? '').toString();
+
+    // Posibles campos de nombre
+    final fullName = (root['fullName'] ??
+            root['name'] ??
+            root['full_name'] ??
+            root['fullname'] ??
+            '')
+        .toString();
+
+    return MeProfile(id: id, fullName: fullName);
+  }
 }
 
 enum AppointmentStatus { PENDING, CONFIRMED, CANCELLED, COMPLETED }
@@ -46,14 +75,14 @@ class AppointmentItem {
   });
 
   factory AppointmentItem.fromMap(Map<String, dynamic> j) {
-    final statusStr = (j['status'] ?? 'CONFIRMED') as String;
+    final statusStr = (j['status'] ?? 'CONFIRMED').toString();
     final parsed = AppointmentStatus.values.firstWhere(
       (e) => e.name == statusStr,
       orElse: () => AppointmentStatus.CONFIRMED,
     );
     return AppointmentItem(
-      id: (j['id'] ?? '') as String,
-      doctorUserId: (j['doctorUserId'] ?? '') as String,
+      id: (j['id'] ?? '').toString(),
+      doctorUserId: (j['doctorUserId'] ?? '').toString(),
       scheduledAt: DateTime.parse(j['scheduledAt'] as String),
       status: parsed,
       reason: j['reason'] as String?,
@@ -63,7 +92,7 @@ class AppointmentItem {
 }
 
 /* ===========================
-   Pantalla principal HomeUser
+   Screen
    =========================== */
 
 class HomeUserScreen extends StatefulWidget {
@@ -88,7 +117,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
 
   Future<void> _load() async {
     try {
-      final me = await _fetchMe();
+      final me = await _fetchMeWithFallback(); // <- robusto
       final appts = await _fetchMyAppointments();
 
       setState(() {
@@ -97,29 +126,64 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
         _recent = appts;
         _loading = false;
       });
-    } catch (e) {
+    } catch (e, st) {
+      if (kDebugMode) {
+        print('[HomeUser] load error: $e');
+        print(st);
+      }
       setState(() => _loading = false);
     }
   }
 
-  Future<MeProfile> _fetchMe() async {
-    final res = await ApiClient.dio.get('/v1/users/me'); // o '/auth/me' si ese usas
-    // si tu backend devuelve application/json nativo, res.data ya es Map
-    final data = res.data is String ? json.decode(res.data) : res.data;
-    return MeProfile.fromMap(data as Map<String, dynamic>);
+  /// Intenta /v1/users/me y luego /auth/me; acepta mapas o strings.
+  Future<MeProfile> _fetchMeWithFallback() async {
+    Response res;
+
+    try {
+      res = await ApiClient.dio.get('/v1/users/me');
+      if (kDebugMode) {
+        print('[HomeUser] /v1/users/me -> ${res.statusCode}');
+      }
+      if (res.statusCode != null && res.statusCode! >= 200 && res.statusCode! < 300) {
+        return MeProfile.fromAny(res.data);
+      }
+    } catch (e) {
+      if (kDebugMode) print('[HomeUser] /v1/users/me failed: $e');
+    }
+
+    // Fallback a /auth/me
+    final res2 = await ApiClient.dio.get('/auth/me');
+    if (kDebugMode) {
+      print('[HomeUser] /auth/me -> ${res2.statusCode}');
+      if (res2.data is String) print('[HomeUser] /auth/me body (string): ${res2.data}');
+      if (res2.data is Map) print('[HomeUser] /auth/me body keys: ${(res2.data as Map).keys}');
+    }
+    return MeProfile.fromAny(res2.data);
   }
 
   Future<List<AppointmentItem>> _fetchMyAppointments() async {
-    final Response res = await ApiClient.dio.get('/v1/appointments/me', queryParameters: {
-      'limit': 10,
-    });
-    final list = (res.data is String) ? json.decode(res.data) : res.data;
-    return (list as List)
-        .map((e) => AppointmentItem.fromMap(e as Map<String, dynamic>))
-        .toList();
+    try {
+      final res = await ApiClient.dio.get('/v1/appointments/me', queryParameters: {'limit': 10});
+      if (kDebugMode) {
+        print('[HomeUser] /v1/appointments/me -> ${res.statusCode}');
+      }
+      final list = (res.data is String) ? json.decode(res.data) : res.data;
+      if (list is List) {
+        return list.map((e) => AppointmentItem.fromMap(e as Map<String, dynamic>)).toList();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) print('[HomeUser] appointments error: $e');
+      return [];
+    }
   }
 
-  String _firstFrom(String name) => name.trim().split(RegExp(r'\s+')).firstOrNull ?? '';
+  String _firstFrom(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    return parts.first;
+  }
 
   String _greetByHour(DateTime now) {
     final h = now.hour;
@@ -161,7 +225,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                     padding: const EdgeInsets.only(bottom: 88),
                     child: Column(
                       children: [
-                        _HomeHeader(greeting: _greeting, firstName: _firstName),
+                        _HomeHeader(greeting: _greetByHour(DateTime.now()), firstName: _firstName),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
                           child: Column(
@@ -190,7 +254,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
 }
 
 /* ===========================
-   Header (mismo estilo)
+   Header
    =========================== */
 
 class _HomeHeader extends StatelessWidget {
@@ -242,7 +306,7 @@ class _HomeHeader extends StatelessWidget {
 }
 
 /* ===========================
-   Quick Actions (tu widget)
+   Quick Actions
    =========================== */
 
 class _QuickActionsCard extends StatelessWidget {
@@ -273,7 +337,7 @@ class _QuickActionsCard extends StatelessWidget {
           Text('Nueva Consulta',
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          const QuickActionsUser(), // mantiene tu widget
+          const QuickActionsUser(),
         ],
       ),
     );
@@ -281,7 +345,7 @@ class _QuickActionsCard extends StatelessWidget {
 }
 
 /* ===========================
-   Actividad Reciente (Appointments)
+   Recent Activity
    =========================== */
 
 class _RecentActivityCard extends StatelessWidget {
@@ -295,8 +359,7 @@ class _RecentActivityCard extends StatelessWidget {
     if (diff.inHours < 24) return '${diff.inHours}h';
     if (diff.inDays == 1) return 'Ayer';
     if (diff.inDays < 7) return '${diff.inDays}d';
-    // dd/MM sin intl
-    final two = (int n) => n.toString().padLeft(2, '0');
+    String two(int n) => n.toString().padLeft(2, '0');
     return '${two(when.day)}/${two(when.month)}';
   }
 
@@ -360,7 +423,7 @@ class _RecentActivityCard extends StatelessWidget {
                 icon: icon,
                 iconBackground: bg,
                 iconColor: icColor,
-                title: 'Consulta', // si luego traes nombre del doctor, cámbialo aquí
+                title: 'Consulta',
                 subtitle: subtitle,
                 badgeText: _humanize(it.scheduledAt),
                 badgeColor: icColor.withOpacity(0.15),
@@ -442,12 +505,4 @@ class _ActivityItem extends StatelessWidget {
       ],
     );
   }
-}
-
-/* ===========================
-   Extensión pequeña de List
-   =========================== */
-
-extension _SafeFirst<T> on List<T> {
-  T? get firstOrNull => isEmpty ? null : first;
 }
