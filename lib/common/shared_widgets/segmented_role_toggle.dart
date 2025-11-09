@@ -1,3 +1,4 @@
+// lib/common/shared_widgets/segmented_role_toggle.dart
 import 'package:flutter/material.dart';
 
 enum UserRole { patient, doctor }
@@ -15,77 +16,75 @@ class SegmentedRoleToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: cs.outline.withOpacity(0.25), width: 1.6),
-    );
 
-    return Container(
-      decoration: ShapeDecoration(
-        shape: border,
-        color: cs.onPrimary, // fondo claro
-      ),
-      padding: const EdgeInsets.all(6),
-      child: Row(
-        children: [
-          _pill(
-            context,
-            label: 'Paciente',
-            icon: Icons.person_rounded,
-            selected: value == UserRole.patient,
-            onTap: () => onChanged(UserRole.patient),
-          ),
-          const SizedBox(width: 6),
-          _pill(
-            context,
-            label: 'Médico',
-            icon: Icons.medical_services_rounded,
-            selected: value == UserRole.doctor,
-            onTap: () => onChanged(UserRole.doctor),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _pill(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Expanded(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: selected ? cs.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon,
-                  size: 18,
-                  color: selected ? cs.onPrimary : cs.primary),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: selected ? cs.onPrimary : cs.primary,
-                    ),
+    Widget segment({
+      required bool selected,
+      required IconData icon,
+      required String label,
+      required VoidCallback onTap,
+    }) {
+      return Expanded(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: selected ? cs.primary.withOpacity(.12) : cs.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: selected ? cs.primary : cs.outline.withOpacity(.35),
+                width: selected ? 1.5 : 1,
               ),
-            ],
+            ),
+            // FittedBox: evita overflow en anchos pequeños
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      icon,
+                      size: 18,
+                      color: selected ? cs.primary : cs.onSurface.withOpacity(.8),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      label,
+                      softWrap: false,
+                      overflow: TextOverflow.fade,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: selected ? cs.primary : cs.onSurface.withOpacity(.9),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
-      ),
+      );
+    }
+
+    return Row(
+      children: [
+        segment(
+          selected: value == UserRole.patient,
+          icon: Icons.person_rounded,
+          label: 'Paciente',
+          onTap: () => onChanged(UserRole.patient),
+        ),
+        const SizedBox(width: 12),
+        segment(
+          selected: value == UserRole.doctor,
+          icon: Icons.medical_services_rounded,
+          label: 'Médico',
+          onTap: () => onChanged(UserRole.doctor),
+        ),
+      ],
     );
   }
 }

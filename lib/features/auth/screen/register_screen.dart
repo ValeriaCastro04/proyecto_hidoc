@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
 
 import 'package:proyecto_hidoc/common/layout/scroll_fill.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/app_logo.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/auth_card.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/icon_text_field.dart';
-import 'package:proyecto_hidoc/common/shared_widgets/segmented_role_toggle.dart';
+import 'package:proyecto_hidoc/common/shared_widgets/segmented_role_toggle.dart'
+    as role; // 👈 alias para el enum UserRole
 import 'package:proyecto_hidoc/common/global_widgets/solid_button.dart';
 
 import 'package:proyecto_hidoc/features/auth/screen/login_screen.dart';
 import 'package:proyecto_hidoc/features/user/screen/homeuser_screen.dart';
 import 'package:proyecto_hidoc/features/doctor/screen/homedoctor_screen.dart';
+
+import 'package:proyecto_hidoc/services/api_client.dart';
+import 'package:proyecto_hidoc/services/token_storage.dart';
 
 class RegisterScreen extends StatefulWidget {
   static const String name = 'Register';
@@ -28,17 +33,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _password = TextEditingController();
   final _confirm = TextEditingController();
 
-  // NUEVO: controlador para identificación profesional (solo médico)
-  final _proId = TextEditingController();
+  final _proId = TextEditingController(); // solo médico
 
   bool _obscure1 = true;
   bool _obscure2 = true;
   bool _accept = false;
-
-  // NUEVO: checkbox de afirmación (solo médico)
   bool _affirmMed = false;
 
-  UserRole _role = UserRole.patient;
+  role.UserRole _role = role.UserRole.patient;
 
   @override
   void dispose() {
@@ -46,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
-    _proId.dispose(); // NUEVO
+    _proId.dispose();
     super.dispose();
   }
 
@@ -84,12 +86,68 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // Sin autenticación: redirige por rol
-    if (!mounted) return;
-    if (_role == UserRole.doctor) {
-      context.goNamed(HomeDoctorScreen.name);
-    } else {
-      context.goNamed(HomeUserScreen.name);
+    try {
+      // peticiones
+      final dio = ApiClient.dio; // tu cliente configurado
+      final apiRole =
+          _role == role.UserRole.doctor ? 'DOCTOR' : 'PATIENT'; // mapeo API
+
+      final payload = <String, dynamic>{
+        'fullName': _name.text.trim(),
+        'email': _email.text.trim(),
+        'password': _password.text,
+        'role': apiRole,
+        'acceptTerms': true,
+      };
+
+      if (_role == role.UserRole.doctor) {
+        payload['professionalId'] = _proId.text.trim().isEmpty
+            ? null
+            : _proId.text.trim();
+        payload['medicalBoardAck'] = _affirmMed; // field opcional si lo usas
+      }
+
+      final res = await dio.post('/auth/register', data: payload);
+
+      // guarda tokens si llegan
+      final data = res.data as Map;
+      final access = data['access_token'] as String?;
+      final refresh = data['refresh_token'] as String?;
+      if (access != null) await TokenStorage.saveAccessToken(access);
+      if (refresh != null) await TokenStorage.saveRefreshToken(refresh);
+
+      if (!mounted) return;
+      if (_role == role.UserRole.doctor) {
+        context.goNamed(HomeDoctorScreen.name); // 👈 nombre correcto
+      } else {
+        context.goNamed(HomeUserScreen.name);
+      }
+    } on DioException catch (e) {
+      // Normaliza mensaje => siempre String
+      String msg = 'Error de red';
+      if (e.type == DioExceptionType.connectionError) {
+        msg = 'No se pudo conectar con la API (¿corre en http://localhost:3000?).';
+      } else if (e.response != null) {
+        final body = e.response?.data;
+        if (body is Map && body['message'] != null) {
+          final m = body['message'];
+          if (m is String) {
+            msg = m;
+          } else if (m is List && m.isNotEmpty) {
+            msg = m.first.toString();
+          } else {
+            msg = m.toString();
+          }
+        } else {
+          msg = 'Error ${e.response?.statusCode ?? ''}'.trim();
+        }
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Ocurrió un error inesperado')));
     }
   }
 
@@ -137,7 +195,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Text('Tipo de usuario:',
                               style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
                           const SizedBox(height: 8),
-                          SegmentedRoleToggle(
+                          role.SegmentedRoleToggle(
                             value: _role,
                             onChanged: (r) => setState(() => _role = r),
                           ),
@@ -216,13 +274,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             validator: _confirmValidator,
                           ),
 
-                          // NUEVO: Campo visible solo si rol = médico
-                          if (_role == UserRole.doctor) ...[
+                          if (_role == role.UserRole.doctor) ...[
                             const SizedBox(height: 12),
                             IconTextField(
                               controller: _proId,
                               label: 'Número de identificación profesional',
-                              hint: 'Ej: 123456',
+                              hint: 'JVPM-123456',
                               icon: Icons.medical_information_rounded,
                             ),
                           ],
@@ -243,8 +300,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ],
                           ),
 
-                          // NUEVO: Checkbox adicional bajo T&C (solo médico)
-                          if (_role == UserRole.doctor) ...[
+                          if (_role == role.UserRole.doctor) ...[
                             const SizedBox(height: 4),
                             Row(
                               children: [
@@ -254,7 +310,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                                 Expanded(
                                   child: Text(
-                                    'Afirmo que mi identificación profesional como médico está aprobado por la Junta de Vigilancia de la Profesión Médica.',
+                                    'Afirmo que mi identificación profesional está aprobada por la Junta de Vigilancia.',
                                     style: theme.textTheme.bodySmall,
                                   ),
                                 ),
