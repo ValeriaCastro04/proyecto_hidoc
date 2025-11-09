@@ -10,6 +10,7 @@ import 'package:proyecto_hidoc/common/shared_widgets/recent_activity.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/activities.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/summary_card_list.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/doctor.dart';
 
 class HomeDoctorScreen extends StatelessWidget {
   static const String name = 'homedoctor_screen';
@@ -18,11 +19,13 @@ class HomeDoctorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    const String name = 'Dra. Elena Martínez';
+    final doctor = Doctor;
+    final String doctorName = doctor[0]['name'];
+
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
-        title: name,
+        title: doctor[0]['name'],
         actions: [
           ThemeToggleButton(), 
           IconButton(
@@ -34,7 +37,7 @@ class HomeDoctorScreen extends StatelessWidget {
             backgroundColor: colors.primary,
             foregroundColor: colors.onPrimary,
             child: Text(
-              name.split(' ').map((e) => e[0]).take(2).join(),
+              doctorName.split(' ').map((e) => e[0]).take(2).join(),
             ),
           ),
           const SizedBox(width: 16),

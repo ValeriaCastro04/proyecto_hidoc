@@ -16,9 +16,9 @@ final List<SummaryItem> summaryItems = [
 
 final List<SummaryItem> reportSummaryItems = [
   SummaryItem(
-    icon: Icons.star_rounded,
-    label: 'Calificación',
-    value: '4.5',
+    icon: Icons.person_rounded,
+    label: 'Pacientes',
+    value: '157',
   ),
   SummaryItem(
     icon: Icons.event_available_rounded,

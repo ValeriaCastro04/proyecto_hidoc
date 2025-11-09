@@ -5,6 +5,7 @@ import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/patients.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/list/doctor.dart';
 
 class AgendaScreen extends StatefulWidget {
   static const String name = 'agenda_screen';
@@ -99,11 +100,12 @@ class _AgendaScreenState extends State<AgendaScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final appointments = _getAppointmentsForDay(_selectedDay);
-    final String name = 'Dra. Elena Martínez';
+    final doctor = Doctor;
+    final String doctorName = doctor[0]['name'];
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
-        title: name,
+        title: doctorName,
         actions: [
           ThemeToggleButton(), 
           IconButton(
@@ -118,7 +120,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
             backgroundColor: colors.primary,
             foregroundColor: colors.onPrimary,
             child: Text(
-              name.split(' ').map((e) => e[0]).take(2).join(),
+              doctorName.split(' ').map((e) => e[0]).take(2).join(),
             ),
           ),
           const SizedBox(width: 16),

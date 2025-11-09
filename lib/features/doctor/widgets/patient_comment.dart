@@ -1,18 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/patients.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/list/patients_comments.dart';
 
 class PatientCommentsCard extends StatelessWidget {
   final String title;
+  final List<Map<String, dynamic>> comments; // Lista de comentarios
 
   const PatientCommentsCard({
     super.key,
     this.title = "Comentarios de los pacientes",
+    this.comments = const [], // Valor por defecto
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+
+    if (comments.isEmpty) {
+      return Center(
+        child: Text(
+          "No hay comentarios disponibles",
+          style: TextStyle(color: colors.onSurfaceVariant),
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,14 +36,10 @@ class PatientCommentsCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemCount: patientComments.length,
-          itemBuilder: (context, index) {
-            final commentData = patientComments[index];
+        // Reemplazamos ListView.builder por Column para evitar tamaño infinito
+        Column(
+          children: comments.map((commentData) {
             final patient = Patients[commentData['patientIndex']];
-
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 6),
               child: Row(
@@ -84,9 +90,10 @@ class PatientCommentsCard extends StatelessWidget {
                 ],
               ),
             );
-          },
+          }).toList(),
         ),
       ],
     );
   }
 }
+

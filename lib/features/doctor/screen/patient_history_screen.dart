@@ -164,7 +164,7 @@ class _SectionCard extends StatelessWidget {
         border: Border.all(color: colors.outline.withOpacity(.15)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.06),
+            color: colors.onBackground.withOpacity(.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -174,12 +174,12 @@ class _SectionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
-            style: text.titleMedium?.copyWith(
-              color: colors.primary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
+              title,
+                style: text.titleMedium?.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w800,
+                )
+              ),
           const SizedBox(height: 12),
           child,
         ],
