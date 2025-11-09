@@ -6,6 +6,8 @@ import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 import 'package:proyecto_hidoc/features/user/widgets/quick_actions_user.dart';
 import 'package:proyecto_hidoc/features/user/services/doctor_service.dart';
 import 'package:proyecto_hidoc/features/user/models/doctor_category.dart';
+import 'package:proyecto_hidoc/services/token_storage.dart';
+import 'package:go_router/go_router.dart';
 
 class ConsultasScreen extends StatelessWidget {
   const ConsultasScreen({super.key});
@@ -19,7 +21,53 @@ class ConsultasScreen extends StatelessWidget {
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
         title: 'HiDoc!',
-        actions: const [ ThemeToggleButton() ],
+        actions: [
+          const ThemeToggleButton(),
+          IconButton(
+            tooltip: 'Notificaciones',
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Próximamente: notificaciones')),
+              );
+            },
+            icon: Icon(Icons.notifications_none_rounded, color: cs.onSurface),
+          ),
+          // Avatar con menú (Perfil / Cerrar sesión)
+          PopupMenuButton<String>(
+            tooltip: 'Cuenta',
+            position: PopupMenuPosition.under,
+            onSelected: (v) async {
+              if (v == 'profile') {
+                context.go('/perfil');
+              } else if (v == 'logout') {
+                await TokenStorage.clear();
+                if (context.mounted) context.go('/auth/login');
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'profile', child: Text('Perfil')),
+              PopupMenuDivider(),
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout_rounded, size: 18),
+                    SizedBox(width: 8),
+                    Text('Cerrar sesión'),
+                  ],
+                ),
+              ),
+            ],
+            child: Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: CircleAvatar(
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
+                child: const Text('V', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -53,8 +101,10 @@ class ConsultasScreen extends StatelessWidget {
                       children: [
                         Text('Consultas', style: tt.headlineMedium?.copyWith(fontWeight: FontWeight.w800)),
                         const SizedBox(height: 6),
-                        Text('Mira las diferentes especialidades disponibles',
-                            style: tt.bodyMedium?.copyWith(color: cs.onSurface.withOpacity(.7))),
+                        Text(
+                          'Mira las diferentes especialidades disponibles',
+                          style: tt.bodyMedium?.copyWith(color: cs.onSurface.withOpacity(.7)),
+                        ),
                         const SizedBox(height: 16),
 
                         _SectionCard(
