@@ -1,48 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:proyecto_hidoc/features/user/models/doctor_category.dart';
-import 'package:proyecto_hidoc/features/user/pages/doctores_disponibles.dart';
 
+/// Muestra accesos rápidos a las categorías de doctores.
+/// Espera codigos: GENERAL | ESPECIALIZADA | PEDIATRIA
 class QuickActionsUser extends StatelessWidget {
   final List<DoctorCategoryDto> categories;
+
   const QuickActionsUser({super.key, required this.categories});
+
+  // Orden fijo de cómo queremos mostrarlas
+  int _orderKey(String code) {
+    switch (code.toUpperCase()) {
+      case 'GENERAL':
+        return 1;
+      case 'ESPECIALIZADA':
+        return 2;
+      case 'PEDIATRIA':
+        return 3;
+      default:
+        return 99;
+    }
+  }
+
+  String _pathFromCode(String code) {
+    switch (code.toUpperCase()) {
+      case 'GENERAL':
+        return 'general';
+      case 'ESPECIALIZADA':
+        return 'especializada';
+      case 'PEDIATRIA':
+        return 'pediatrica';
+      default:
+        return code.toLowerCase();
+    }
+  }
+
+  IconData _iconFromCode(String code) {
+    switch (code.toUpperCase()) {
+      case 'GENERAL':
+        return Icons.medical_services_rounded;
+      case 'ESPECIALIZADA':
+        return Icons.add_circle_outline_rounded;
+      case 'PEDIATRIA':
+        return Icons.child_care_rounded;
+      default:
+        return Icons.local_hospital_rounded;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     if (categories.isEmpty) {
-      return Text(
-        'No hay categorías disponibles por ahora',
-        style: Theme.of(context).textTheme.bodyMedium,
-      );
+      return Text('No hay categorías disponibles por ahora',
+          style: tt.bodyMedium);
     }
 
-    // Tomamos solo las 3 primeras si hubiera más
-    final items = categories.take(3).toList();
+    // Ordenamos y tomamos hasta 3 (si vienen más)
+    final items = [...categories]..sort((a, b) => _orderKey(a.code).compareTo(_orderKey(b.code)));
 
     return LayoutBuilder(
-      builder: (context, c) {
-        final isNarrow = c.maxWidth < 520; // web/chrome suele ser ancho; ajustamos por si acaso
+      builder: (context, constraints) {
+        // Tres columnas equilibradas
         return Row(
-          children: [
-            for (int i = 0; i < items.length; i++) ...[
-              Expanded(
-                child: _ActionCard(
-                  title: items[i].name ?? items[i].code,
-                  icon: Icons.medical_services_rounded,
-                  onTap: () {
-                    context.pushNamed(
-                      DoctoresDisponiblesPage.name,
-                      queryParameters: {
-                        'categoryCode': items[i].code,        // GENERAL | ESPECIALIZADA | PEDIATRIA
-                        'categoryName': items[i].name ?? '',  // Etiqueta legible
-                      },
-                    );
-                  },
-                ),
+          children: List.generate(items.length.clamp(0, 3), (i) {
+            final c = items[i];
+            return Expanded(
+              child: _ActionCard(
+                icon: _iconFromCode(c.code),
+                label: c.name,
+                onTap: () => context.push('/consultas/${_pathFromCode(c.code)}'),
               ),
-              if (i != items.length - 1) SizedBox(width: isNarrow ? 10 : 16),
-            ],
-          ],
+            );
+          }),
         );
       },
     );
@@ -50,13 +83,13 @@ class QuickActionsUser extends StatelessWidget {
 }
 
 class _ActionCard extends StatelessWidget {
-  final String title;
   final IconData icon;
+  final String label;
   final VoidCallback onTap;
 
   const _ActionCard({
-    required this.title,
     required this.icon,
+    required this.label,
     required this.onTap,
   });
 
@@ -65,48 +98,39 @@ class _ActionCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return Material(
-      color: cs.surface,
-      borderRadius: BorderRadius.circular(16),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Container(
-          constraints: const BoxConstraints(minHeight: 92), // ↑ un poco más alto para evitar overflow
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          height: 104, // extra alto para evitar “bottom overflowed”
           decoration: BoxDecoration(
-            border: Border.all(color: cs.outline.withOpacity(.15)),
+            color: cs.surface,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(.06),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: cs.outline.withOpacity(.15)),
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                height: 40,
-                width: 40,
+                height: 44,
+                width: 44,
                 decoration: BoxDecoration(
-                  color: cs.primary.withOpacity(.10),
+                  color: cs.primary.withOpacity(.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: cs.primary),
               ),
               const SizedBox(height: 8),
-              // Texto en 2 líneas máximo y centrado: sin overflow rojo
-              Flexible(
-                child: Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                ),
+              // Dos líneas máximo, sin overflow
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
               ),
             ],
           ),

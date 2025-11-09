@@ -54,26 +54,44 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const HomeUserScreen(),
     ),
     GoRoute(
-      path: '/consultas',
-      name: 'ConsultasUser',
-      builder: (context, state) => const ConsultasScreen(),
-      routes: [
-        // Ruta para doctores disponibles usando queryParameters (categoryCode, categoryName)
-        GoRoute(
-          path: 'doctores',
-          name: DoctoresDisponiblesPage.name, // 'DoctoresDisponibles'
-          builder: (context, state) {
-            final qp = state.uri.queryParameters;
-            final code = qp['categoryCode'];   // GENERAL / ESPECIALIZADA / PEDIATRIA
-            final name = qp['categoryName'];   // “Medicina General”, etc.
-            return DoctoresDisponiblesPage(
-              categoryCode: code,
-              categoryName: name,
-            );
-          },
-        ),
-      ],
+  path: '/consultas',
+  name: 'ConsultasUser',
+  builder: (context, state) => const ConsultasScreen(),
+  routes: [
+    // Acepta /consultas/general | /consultas/especializada | /consultas/pediatrica
+    GoRoute(
+      path: ':category',
+      name: DoctoresDisponiblesPage.name, // 'DoctoresDisponibles'
+      builder: (context, state) {
+        final slug = (state.pathParameters['category'] ?? '').toLowerCase();
+
+        // Mapeo slug -> code y name para tu página
+        String code = 'GENERAL';
+        String name = 'Medicina General';
+        switch (slug) {
+          case 'especializada':
+            code = 'ESPECIALIZADA';
+            name = 'Especializada';
+            break;
+          case 'pediatrica':
+            code = 'PEDIATRIA';
+            name = 'Pediatría';
+            break;
+          case 'general':
+          default:
+            code = 'GENERAL';
+            name = 'Medicina General';
+        }
+
+        return DoctoresDisponiblesPage(
+          categoryCode: code,
+          categoryName: name,
+        );
+      },
     ),
+  ],
+),
+
 
     GoRoute(
       path: '/pago',
