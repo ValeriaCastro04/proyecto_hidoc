@@ -33,7 +33,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   bool _isLoading = true;
   String? _error;
   // Esta lista almacena las citas PROCESADAS en el formato que tu UI espera
-  List<Map<String, dynamic>> _processedAppointments = [];
+  List<Map<String, Object>> _processedAppointments = [];
 
   @override
   void initState() {
@@ -47,7 +47,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
 
   /// 8. TRADUCTOR: Convierte CitaDoctor (API) a Map (UI)
   /// Esto es clave para que tu UI de "índices" funcione.
-  List<Map<String, dynamic>> _processApiCitas(List<CitaDoctor> citasApi) {
+  List<Map<String, Object>> _processApiCitas(List<CitaDoctor> citasApi) {
     return citasApi.map((cita) {
       // Convierte las fechas UTC de la API a la hora local del dispositivo
       final localStart = cita.start.toLocal();
@@ -194,33 +194,38 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         
         // Buscar cita que contenga este intervalo
         final appointment = _processedAppointments.firstWhere(
-          (a) => index >= a['timeStart'] && index < a['timeEnd'],
-          orElse: () => {},
+          (a) => index >= (a['timeStart'] as int) && index < (a['timeEnd'] as int),
+          orElse: () => <String, Object>{},
         );
 
         if (appointment.isNotEmpty) {
-          // Si este índice es el inicio de una cita
-          if (index == appointment['timeStart']) {
-            final durationInHalfHours =
-                appointment['timeEnd'] - appointment['timeStart'];
+          // --- 1. Extraer y castear los valores ---
+          final int timeStart = appointment['timeStart'] as int;
+          final int timeEnd = appointment['timeEnd'] as int;
+          final String patientName = appointment['patientName'] as String;
+          final String reason = appointment['reason'] as String;
+          final Color color = appointment['color'] as Color;
 
-            final appointmentHeight =
-                _halfHourHeight * durationInHalfHours;
+          // Si este índice es el inicio de una cita
+          if (index == timeStart) {
+            // --- 2. Usar las variables ya casteadas ---
+            final durationInHalfHours = timeEnd - timeStart;
+
+            final appointmentHeight = _halfHourHeight * durationInHalfHours;
 
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 4),
               padding: const EdgeInsets.all(12),
               height: appointmentHeight,
               decoration: BoxDecoration(
-                color: (appointment['color'] as Color).withOpacity(0.85),
+                color: color.withOpacity(0.85),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    // <-- 12. Usar el nombre procesado de la API
-                    appointment['patientName']!,
+                    patientName,
                     style: TextStyle(
                       color: colors.onPrimary,
                       fontWeight: FontWeight.bold,
@@ -228,7 +233,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                     ),
                   ),
                   Text(
-                    appointment['reason'],
+                    reason,
                     maxLines: durationInHalfHours > 1 ? 2 : 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -237,8 +242,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                     ),
                   ),
                   Text(
-                    '${_formatIndexToTime(appointment['timeStart'])} - '
-                    '${_formatIndexToTime(appointment['timeEnd'])}',
+                    '${_formatIndexToTime(timeStart)} - ${_formatIndexToTime(timeEnd)}',
                     style: TextStyle(
                       color: colors.onPrimary.withOpacity(0.7),
                       fontSize: 14,
