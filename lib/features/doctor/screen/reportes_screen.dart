@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // 1. Importar Riverpod
+import 'package:go_router/go_router.dart'; // 2. Importar GoRouter
 import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
+import 'package:proyecto_hidoc/features/doctor/widgets/seguridad.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/summary_card.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/summary_card_list.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/patient_comment.dart';
@@ -12,12 +15,21 @@ import 'package:proyecto_hidoc/features/doctor/widgets/doctor_infor.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/doctor_schedule.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/doctor_diploma.dart';
 
-class ReportesScreen extends StatelessWidget {
+// 3. Importar tu provider de TokenStorage (asumo que está en main.dart)
+import 'package:proyecto_hidoc/main.dart'; 
+
+// 4. Importar el nombre de tu ruta de Login (ajústalo si es diferente)
+import '../../auth/screen/login_screen.dart';
+
+
+// 5. Convertir a ConsumerWidget
+class ReportesScreen extends ConsumerWidget {
   static const String name = 'reportes_screen';
   const ReportesScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  // 6. Añadir 'ref' a la firma del build
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final doctor = Doctor[0]; // Tomamos el primer doctor
     final profileTabs = doctor['profile_tabs'];
@@ -28,6 +40,31 @@ class ReportesScreen extends StatelessWidget {
       3000, 3200, 2800, 3500, 4000, 4200,
       3800, 4500, 4300, 4700, 5000, 4800,
     ];
+
+    // 7. Esta es la función de logout
+    void onLogoutTapped() async {
+      try {
+        // A. Lee tu provider de TokenStorage (definido en main.dart)
+        final storage = ref.read(tokenStorageProvider);
+        
+        // B. Borra los tokens locales (access y refresh)
+        await storage.clear();
+
+        // C. Navega a la pantalla de login.
+        //    Usamos goNamed para reemplazar la pila de navegación.
+        if (context.mounted) {
+          context.goNamed(LoginScreen.name);
+        }
+
+      } catch (e) {
+        // En caso de que algo falle
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al cerrar sesión: $e')),
+          );
+        }
+      }
+    }
 
     return Scaffold(
       appBar: HeaderBar.brand(
@@ -71,7 +108,7 @@ class ReportesScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Diplomas del doctor
-              DiplomasTab(diplomas: profileTabs['diplomas']), 
+              DiplomasTab(diplomas: profileTabs['diplomas']),
               const SizedBox(height: 16),
 
               // Comentarios de pacientes dinámicos
@@ -85,6 +122,9 @@ class ReportesScreen extends StatelessWidget {
               MonthlyIncomeChart(monthlyIncome: ingresos),
               const SizedBox(height: 16),
 
+              // 8. Pasa la función de logout al widget
+              SecuritySettingsCard(onLogoutTapped: onLogoutTapped),
+              const SizedBox(height: 16),
             ],
           ),
         ),
