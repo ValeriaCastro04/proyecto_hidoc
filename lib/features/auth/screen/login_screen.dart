@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Traemos los providers desde main.dart
 import 'package:proyecto_hidoc/main.dart' show dioProvider, tokenStorageProvider;
 import 'package:proyecto_hidoc/services/token_storage.dart';
 
@@ -13,10 +12,7 @@ import 'package:proyecto_hidoc/common/layout/scroll_fill.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/app_logo.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/auth_card.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/icon_text_field.dart';
-
-// Import del toggle con prefijo para usar su enum sin choques
-import 'package:proyecto_hidoc/common/shared_widgets/segmented_role_toggle.dart'
-    as seg;
+import 'package:proyecto_hidoc/common/shared_widgets/segmented_role_toggle.dart' as seg;
 
 import 'package:proyecto_hidoc/common/global_widgets/solid_button.dart';
 import 'package:proyecto_hidoc/features/auth/screen/register_screen.dart';
@@ -40,7 +36,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _loading = false;
   String? _errorText;
 
-  // Usamos el enum del toggle (UI informativa; el backend no lo requiere para login)
   seg.UserRole _role = seg.UserRole.patient;
 
   @override
@@ -66,25 +61,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _showSnack(String msg, {bool error = false}) {
     final cs = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: error ? cs.error : cs.primary,
-      ),
+      SnackBar(content: Text(msg), backgroundColor: error ? cs.error : cs.primary),
     );
   }
 
-  Future<void> _cacheUserInfo(Map<String, dynamic> user) async {
+  Future<void> _cacheUserMeta({
+    required String name,
+    required String role,
+    required String email,
+  }) async {
     try {
       final sp = await SharedPreferences.getInstance();
-      final name = (user['name'] ?? '').toString();
-      final role = (user['role'] ?? '').toString();
-      final email = (user['email'] ?? '').toString();
-
       if (name.isNotEmpty) await sp.setString('user_name', name);
       if (role.isNotEmpty) await sp.setString('user_role', role);
       if (email.isNotEmpty) await sp.setString('user_email', email);
     } catch (_) {
-      // no bloquear flujo por cache fallida
+      // no bloquear el flujo si falla el cache
     }
   }
 
@@ -106,30 +98,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       });
 
       final data = res.data as Map<String, dynamic>;
-      final access = data['access_token'] as String?;
-      final refresh = data['refresh_token'] as String?;
-      final user = Map<String, dynamic>.from(data['user'] as Map);
+
+      // Acepta ambas convenciones de nombres
+      final access = (data['access_token'] ?? data['accessToken'])?.toString();
+      final refresh = (data['refresh_token'] ?? data['refreshToken'])?.toString();
+      final user = (data['user'] ?? const {}) as Map<String, dynamic>;
 
       if (access == null || refresh == null) {
-        throw Exception('Respuesta inválida del servidor');
+        throw Exception('Respuesta inválida del servidor (faltan tokens)');
       }
 
-      // Guarda tokens en Riverpod storage (FlutterSecureStorage)
+      // Guarda tokens en SecureStorage (vía provider moderno)
       await storage.save(access: access, refresh: refresh);
 
-      // Guarda tokens también en SharedPreferences (ApiClient.dio usa esto)
+      // Y también en SharedPreferences para compatibilidad con ApiClient.dio
       try {
         await TokenStorage.saveAccessToken(access);
         await TokenStorage.saveRefreshToken(refresh);
       } catch (_) {}
 
-      // Cachea nombre/rol/email para el saludo inmediato del Home
-      await _cacheUserInfo(user);
+      // === NUEVO: Cachear nombre/rol/email para saludo inmediato ===
+      final roleStr = (user['role'] ?? '').toString();
+      final emailStr = (user['email'] ?? _email.text.trim()).toString();
+      final nameStr = (user['name'] ?? user['fullName'] ?? user['fullname'] ?? '').toString();
+      await _cacheUserMeta(name: nameStr, role: roleStr, email: emailStr);
 
       // Navega según rol
-      final role = (user['role'] as String?)?.toUpperCase() ?? 'PATIENT';
       if (!mounted) return;
-      if (role == 'DOCTOR') {
+      final roleUpper = roleStr.toUpperCase();
+      if (roleUpper == 'DOCTOR') {
         context.goNamed(HomeDoctorScreen.name);
       } else {
         context.goNamed(HomeUserScreen.name);
@@ -196,14 +193,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           const SizedBox(height: 16),
 
-                          Text(
-                            'Tipo de usuario:',
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                          Text('Tipo de usuario:',
+                              style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
                           const SizedBox(height: 8),
-                          // Toggle usa su propio enum y tipo
                           seg.SegmentedRoleToggle(
                             value: _role,
                             onChanged: (seg.UserRole r) => setState(() => _role = r),
@@ -224,31 +216,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                   ),
                                   onPressed: () {}, // ya estás en login
-                                  child: const Text(
-                                    'Iniciar sesión',
-                                    style: TextStyle(fontWeight: FontWeight.w700),
-                                  ),
+                                  child: const Text('Iniciar sesión',
+                                      style: TextStyle(fontWeight: FontWeight.w700)),
                                 ),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: OutlinedButton(
                                   style: OutlinedButton.styleFrom(
-                                    side: BorderSide(
-                                      color: cs.outline.withOpacity(.35),
-                                      width: 1.5,
-                                    ),
+                                    side: BorderSide(color: cs.outline.withOpacity(.35), width: 1.5),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                   ),
-                                  onPressed: _loading
-                                      ? null
-                                      : () => context.pushNamed(RegisterScreen.name),
-                                  child: const Text(
-                                    'Registrarse',
-                                    style: TextStyle(fontWeight: FontWeight.w700),
-                                  ),
+                                  onPressed: _loading ? null : () => context.pushNamed(RegisterScreen.name),
+                                  child: const Text('Registrarse',
+                                      style: TextStyle(fontWeight: FontWeight.w700)),
                                 ),
                               ),
                             ],
@@ -285,10 +268,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                           if (_errorText != null) ...[
                             const SizedBox(height: 8),
-                            Text(
-                              _errorText!,
-                              style: TextStyle(color: cs.error),
-                            ),
+                            Text(_errorText!, style: TextStyle(color: cs.error)),
                           ],
 
                           const SizedBox(height: 18),
