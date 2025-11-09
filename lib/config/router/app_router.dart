@@ -28,7 +28,7 @@ import 'package:proyecto_hidoc/features/user/pages/doctores_disponibles.dart';
 import 'package:proyecto_hidoc/features/user/pages/pago_page.dart';
 
 final GoRouter appRouter = GoRouter(
-  // 👇 arranque en la pantalla de bienvenida
+  // arranque en la pantalla de bienvenida
   initialLocation: '/welcome',
   routes: [
     GoRoute(
