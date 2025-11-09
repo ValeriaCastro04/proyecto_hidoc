@@ -23,12 +23,12 @@ import 'package:proyecto_hidoc/features/user/screen/patient_medical_history_scre
 // CHAT
 import 'package:proyecto_hidoc/features/user/screen/patient_chat_screen.dart';
 
-//page reutilizable de paciente
+// Pages reutilizables de paciente
 import 'package:proyecto_hidoc/features/user/pages/doctores_disponibles.dart';
 import 'package:proyecto_hidoc/features/user/pages/pago_page.dart';
 
 final GoRouter appRouter = GoRouter(
-  // 👇 que arranque en la pantalla de bienvenida
+  // 👇 arranque en la pantalla de bienvenida
   initialLocation: '/welcome',
   routes: [
     GoRoute(
@@ -46,6 +46,7 @@ final GoRouter appRouter = GoRouter(
       name: RegisterScreen.name,
       builder: (context, state) => const RegisterScreen(),
     ),
+
     // ================== PACIENTE ==================
     GoRoute(
       path: '/home_user',
@@ -57,16 +58,23 @@ final GoRouter appRouter = GoRouter(
       name: 'ConsultasUser',
       builder: (context, state) => const ConsultasScreen(),
       routes: [
-        // Reutilizable por categoría: /consultas/:category
+        // Ruta para doctores disponibles usando queryParameters (categoryCode, categoryName)
         GoRoute(
-          path: ':category',
+          path: 'doctores',
           name: DoctoresDisponiblesPage.name, // 'DoctoresDisponibles'
-          builder: (context, state) => DoctoresDisponiblesPage(
-            categoryPath: state.pathParameters['category'],
-          ),
+          builder: (context, state) {
+            final qp = state.uri.queryParameters;
+            final code = qp['categoryCode'];   // GENERAL / ESPECIALIZADA / PEDIATRIA
+            final name = qp['categoryName'];   // “Medicina General”, etc.
+            return DoctoresDisponiblesPage(
+              categoryCode: code,
+              categoryName: name,
+            );
+          },
         ),
       ],
     ),
+
     GoRoute(
       path: '/pago',
       name: PagoPage.name,
@@ -102,6 +110,7 @@ final GoRouter appRouter = GoRouter(
         );
       },
     ),
+
     GoRoute(
       path: '/historial',
       name: 'HistorialUser',
@@ -118,12 +127,13 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>? ?? {};
         return PatientChatScreen(
-          doctorId: extra['doctorId'] ?? 'dr_001', 
-          doctorName: extra['doctorName'] ?? 'Dr Lopez', 
-          doctorInitials: extra['doctorInitials'] ?? 'DrL'
-          );
+          doctorId: extra['doctorId'] ?? 'dr_001',
+          doctorName: extra['doctorName'] ?? 'Dr Lopez',
+          doctorInitials: extra['doctorInitials'] ?? 'DrL',
+        );
       },
     ),
+
     // ================== DOCTOR ==================
     GoRoute(
       path: '/home_doctor',
