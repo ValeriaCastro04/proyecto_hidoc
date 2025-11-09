@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:proyecto_hidoc/features/user/widgets/footer_user.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer.dart';
@@ -11,6 +12,7 @@ import 'package:proyecto_hidoc/common/shared_widgets/gradient_background.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
 import 'package:proyecto_hidoc/services/api_client.dart';
+import 'package:proyecto_hidoc/services/token_storage.dart';
 
 /* ===========================
    Models
@@ -18,40 +20,21 @@ import 'package:proyecto_hidoc/services/api_client.dart';
 
 class MeProfile {
   final String id;
-  final String fullName;
-  MeProfile({required this.id, required this.fullName});
+  final String name;
 
-  /// Extrae name desde múltiples shapes: flat, {data:{}}, {user:{}}, snake_case, etc.
+  MeProfile({required this.id, required this.name});
+
   factory MeProfile.fromAny(dynamic raw) {
-    Map<String, dynamic> map;
-    if (raw is String) {
-      map = json.decode(raw) as Map<String, dynamic>;
-    } else {
-      map = raw as Map<String, dynamic>;
-    }
+    final Map<String, dynamic> map =
+        raw is String ? json.decode(raw) as Map<String, dynamic> : (raw as Map<String, dynamic>);
 
     Map<String, dynamic> root = map;
-
-    // Si viene envuelto en {data:{...}}
-    if (root['data'] is Map<String, dynamic>) {
-      root = root['data'] as Map<String, dynamic>;
-    }
-    // Si viene envuelto en {user:{...}}
-    if (root['user'] is Map<String, dynamic>) {
-      root = root['user'] as Map<String, dynamic>;
-    }
+    if (root['data'] is Map<String, dynamic>) root = root['data'];
+    if (root['user'] is Map<String, dynamic>) root = root['user'];
 
     final id = (root['id'] ?? root['_id'] ?? '').toString();
-
-    // Posibles campos de nombre
-    final fullName = (root['fullName'] ??
-            root['name'] ??
-            root['full_name'] ??
-            root['fullname'] ??
-            '')
-        .toString();
-
-    return MeProfile(id: id, fullName: fullName);
+    final name = (root['name'] ?? root['fullName'] ?? root['fullname'] ?? '').toString();
+    return MeProfile(id: id, name: name);
   }
 }
 
@@ -75,16 +58,16 @@ class AppointmentItem {
   });
 
   factory AppointmentItem.fromMap(Map<String, dynamic> j) {
-    final statusStr = (j['status'] ?? 'CONFIRMED').toString();
-    final parsed = AppointmentStatus.values.firstWhere(
-      (e) => e.name == statusStr,
+    final st = (j['status'] ?? 'CONFIRMED').toString();
+    final status = AppointmentStatus.values.firstWhere(
+      (e) => e.name == st,
       orElse: () => AppointmentStatus.CONFIRMED,
     );
     return AppointmentItem(
       id: (j['id'] ?? '').toString(),
       doctorUserId: (j['doctorUserId'] ?? '').toString(),
       scheduledAt: DateTime.parse(j['scheduledAt'] as String),
-      status: parsed,
+      status: status,
       reason: j['reason'] as String?,
       note: j['note'] as String?,
     );
@@ -106,87 +89,182 @@ class HomeUserScreen extends StatefulWidget {
 class _HomeUserScreenState extends State<HomeUserScreen> {
   bool _loading = true;
   String _firstName = 'Usuario';
-  String _greeting = 'Hola';
   List<AppointmentItem> _recent = [];
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _primeFromCache().then((_) => _load());
+  }
+
+  /// Muestra lo más rápido posible el nombre cacheado (si existe).
+  Future<void> _primeFromCache() async {
+    try {
+      final sp = await SharedPreferences.getInstance();
+      final cached = sp.getString('user_name') ?? '';
+      if (cached.isNotEmpty) {
+        setState(() {
+          _firstName = _extractFirstName(cached);
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _load() async {
     try {
-      final me = await _fetchMeWithFallback(); // <- robusto
-      final appts = await _fetchMyAppointments();
+      final me = await _fetchUserProfileWithManualRefresh();
+      final appts = await _fetchMyAppointmentsWithManualRefresh();
+
+      // Actualiza cache del nombre si vino desde /me
+      if (me.name.isNotEmpty) {
+        try {
+          final sp = await SharedPreferences.getInstance();
+          await sp.setString('user_name', me.name);
+        } catch (_) {}
+      }
 
       setState(() {
-        _firstName = _firstFrom(me.fullName).isEmpty ? 'Usuario' : _firstFrom(me.fullName);
-        _greeting = _greetByHour(DateTime.now());
+        _firstName = _extractFirstName(me.name);
         _recent = appts;
         _loading = false;
       });
     } catch (e, st) {
       if (kDebugMode) {
-        print('[HomeUser] load error: $e');
+        print('[HomeUser] Error: $e');
         print(st);
       }
       setState(() => _loading = false);
     }
   }
 
-  /// Intenta /v1/users/me y luego /auth/me; acepta mapas o strings.
-  Future<MeProfile> _fetchMeWithFallback() async {
-    Response res;
-
+  // ---------- Helpers de refresh manual ----------
+  Future<bool> _manualRefresh() async {
     try {
-      res = await ApiClient.dio.get('/v1/users/me');
-      if (kDebugMode) {
-        print('[HomeUser] /v1/users/me -> ${res.statusCode}');
+      final refresh = await TokenStorage.getRefreshToken();
+      if (refresh == null || refresh.isEmpty) {
+        if (kDebugMode) print('[HomeUser] No refresh token guardado');
+        return false;
       }
-      if (res.statusCode != null && res.statusCode! >= 200 && res.statusCode! < 300) {
-        return MeProfile.fromAny(res.data);
+      final resp = await ApiClient.dio.post(
+        '/auth/refresh',
+        data: {'refreshToken': refresh},
+        options: Options(
+          extra: {'skipAuth': true}, // si tu interceptor lo respeta, evita Bearer
+          validateStatus: (s) => true,
+        ),
+      );
+      if ((resp.statusCode ?? 500) >= 400) {
+        if (kDebugMode) print('[HomeUser] Refresh HTTP ${resp.statusCode}');
+        await TokenStorage.clear();
+        return false;
       }
-    } catch (e) {
-      if (kDebugMode) print('[HomeUser] /v1/users/me failed: $e');
-    }
+      final data = resp.data is Map ? resp.data as Map : {};
+      final access = (data['access_token'] ?? data['accessToken'])?.toString();
+      final newRefresh = (data['refresh_token'] ?? data['refreshToken'])?.toString();
 
-    // Fallback a /auth/me
-    final res2 = await ApiClient.dio.get('/auth/me');
-    if (kDebugMode) {
-      print('[HomeUser] /auth/me -> ${res2.statusCode}');
-      if (res2.data is String) print('[HomeUser] /auth/me body (string): ${res2.data}');
-      if (res2.data is Map) print('[HomeUser] /auth/me body keys: ${(res2.data as Map).keys}');
+      if (access == null || access.isEmpty) {
+        if (kDebugMode) print('[HomeUser] Refresh respondió sin access_token');
+        return false;
+      }
+      await TokenStorage.saveAccessToken(access);
+      if (newRefresh != null && newRefresh.isNotEmpty) {
+        await TokenStorage.saveRefreshToken(newRefresh);
+      }
+      if (kDebugMode) print('[HomeUser] Refresh OK, access actualizado');
+      return true;
+    } catch (e) {
+      if (kDebugMode) print('[HomeUser] Refresh FAILED: $e');
+      await TokenStorage.clear();
+      return false;
     }
-    return MeProfile.fromAny(res2.data);
   }
 
-  Future<List<AppointmentItem>> _fetchMyAppointments() async {
-    try {
-      final res = await ApiClient.dio.get('/v1/appointments/me', queryParameters: {'limit': 10});
-      if (kDebugMode) {
-        print('[HomeUser] /v1/appointments/me -> ${res.statusCode}');
+  Future<Response<dynamic>> _safeGet(String url, {Map<String, dynamic>? qp}) {
+    return ApiClient.dio.get(
+      url,
+      queryParameters: qp,
+      options: Options(validateStatus: (s) => true), // no lanzar por 401/400
+    );
+  }
+
+  // ---------- Perfil con refresh manual ----------
+  Future<MeProfile> _fetchUserProfileWithManualRefresh() async {
+    // 1) Intentar /v1/users/me
+    var res = await _safeGet('/v1/users/me');
+    if ((res.statusCode ?? 500) == 200) {
+      return MeProfile.fromAny(res.data);
+    }
+    if (res.statusCode == 401) {
+      if (kDebugMode) print('[HomeUser] 401 en /v1/users/me, intentando refresh...');
+      final ok = await _manualRefresh();
+      if (ok) {
+        res = await _safeGet('/v1/users/me');
+        if ((res.statusCode ?? 500) == 200) {
+          return MeProfile.fromAny(res.data);
+        }
       }
-      final list = (res.data is String) ? json.decode(res.data) : res.data;
+    }
+
+    // 2) Fallback a /auth/me
+    var res2 = await _safeGet('/auth/me');
+    if ((res2.statusCode ?? 500) == 200) {
+      return MeProfile.fromAny(res2.data);
+    }
+    if (res2.statusCode == 401) {
+      if (kDebugMode) print('[HomeUser] 401 en /auth/me, intentando refresh...');
+      final ok = await _manualRefresh();
+      if (ok) {
+        res2 = await _safeGet('/auth/me');
+        if ((res2.statusCode ?? 500) == 200) {
+          return MeProfile.fromAny(res2.data);
+        }
+      }
+    }
+
+    // 3) Último recurso: nombre cacheado
+    try {
+      final sp = await SharedPreferences.getInstance();
+      final cached = sp.getString('user_name') ?? '';
+      if (cached.isNotEmpty) {
+        return MeProfile(id: '', name: cached);
+      }
+    } catch (_) {}
+    return MeProfile(id: '', name: 'Usuario');
+  }
+
+  // ---------- Citas con refresh manual ----------
+  Future<List<AppointmentItem>> _fetchMyAppointmentsWithManualRefresh() async {
+    var res = await _safeGet('/v1/appointments/me', qp: {'limit': 10});
+    if ((res.statusCode ?? 500) == 200) {
+      final list = res.data is String ? json.decode(res.data) : res.data;
       if (list is List) {
         return list.map((e) => AppointmentItem.fromMap(e as Map<String, dynamic>)).toList();
       }
-      return [];
-    } catch (e) {
-      if (kDebugMode) print('[HomeUser] appointments error: $e');
-      return [];
+    } else if (res.statusCode == 401) {
+      if (kDebugMode) print('[HomeUser] 401 en /v1/appointments/me, intentando refresh...');
+      final ok = await _manualRefresh();
+      if (ok) {
+        res = await _safeGet('/v1/appointments/me', qp: {'limit': 10});
+        if ((res.statusCode ?? 500) == 200) {
+          final list = res.data is String ? json.decode(res.data) : res.data;
+          if (list is List) {
+            return list.map((e) => AppointmentItem.fromMap(e as Map<String, dynamic>)).toList();
+          }
+        }
+      }
     }
+    return [];
   }
 
-  String _firstFrom(String name) {
-    final trimmed = name.trim();
-    if (trimmed.isEmpty) return '';
-    final parts = trimmed.split(RegExp(r'\s+'));
+  String _extractFirstName(String name) {
+    final n = name.trim();
+    if (n.isEmpty) return 'Usuario';
+    final parts = n.split(RegExp(r'\s+'));
     return parts.first;
   }
 
-  String _greetByHour(DateTime now) {
-    final h = now.hour;
+  String _greeting() {
+    final h = DateTime.now().hour;
     if (h < 12) return 'Buenos días';
     if (h < 19) return 'Buenas tardes';
     return 'Buenas noches';
@@ -195,21 +273,23 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final initialLetter = _firstName.isNotEmpty ? _firstName.characters.first.toUpperCase() : 'U';
+
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
         title: 'HiDoc!',
         actions: [
-          ThemeToggleButton(),
+          const ThemeToggleButton(),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.notifications_none_rounded, color: Theme.of(context).colorScheme.onSurface),
+            icon: Icon(Icons.notifications_none_rounded, color: cs.onSurface),
           ),
           const SizedBox(width: 8),
           CircleAvatar(
             backgroundColor: cs.primary,
             foregroundColor: cs.onPrimary,
-            child: Text(_firstName.isNotEmpty ? _firstName.characters.first.toUpperCase() : 'U'),
+            child: Text(initialLetter),
           ),
         ],
       ),
@@ -225,7 +305,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                     padding: const EdgeInsets.only(bottom: 88),
                     child: Column(
                       children: [
-                        _HomeHeader(greeting: _greetByHour(DateTime.now()), firstName: _firstName),
+                        _HomeHeader(greeting: _greeting(), firstName: _firstName),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
                           child: Column(
@@ -265,7 +345,7 @@ class _HomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final cs = theme.colorScheme;
 
     return Container(
       width: double.infinity,
@@ -274,10 +354,7 @@ class _HomeHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            colorScheme.primary.withOpacity(0.85),
-            colorScheme.primary.withOpacity(0.6),
-          ],
+          colors: [cs.primary.withOpacity(0.85), cs.primary.withOpacity(0.6)],
         ),
       ),
       child: Column(
@@ -287,7 +364,7 @@ class _HomeHeader extends StatelessWidget {
           Text(
             '$greeting, $firstName',
             style: theme.textTheme.headlineMedium?.copyWith(
-              color: colorScheme.onPrimary,
+              color: cs.onPrimary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -295,10 +372,9 @@ class _HomeHeader extends StatelessWidget {
           Text(
             '¿Cómo podemos ayudarte hoy?',
             style: theme.textTheme.titleMedium?.copyWith(
-              color: colorScheme.onPrimary.withOpacity(0.85),
+              color: cs.onPrimary.withOpacity(0.85),
             ),
           ),
-          const SizedBox(height: 10),
         ],
       ),
     );
@@ -306,7 +382,7 @@ class _HomeHeader extends StatelessWidget {
 }
 
 /* ===========================
-   Quick Actions
+   Quick Actions + Recent
    =========================== */
 
 class _QuickActionsCard extends StatelessWidget {
@@ -314,28 +390,22 @@ class _QuickActionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.onPrimary,
+        color: cs.onPrimary,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.1),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
+          BoxShadow(color: cs.shadow.withOpacity(0.1), blurRadius: 16, offset: const Offset(0, 8)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Nueva Consulta',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           const QuickActionsUser(),
         ],
@@ -343,10 +413,6 @@ class _QuickActionsCard extends StatelessWidget {
     );
   }
 }
-
-/* ===========================
-   Recent Activity
-   =========================== */
 
 class _RecentActivityCard extends StatelessWidget {
   final List<AppointmentItem> items;
@@ -359,8 +425,7 @@ class _RecentActivityCard extends StatelessWidget {
     if (diff.inHours < 24) return '${diff.inHours}h';
     if (diff.inDays == 1) return 'Ayer';
     if (diff.inDays < 7) return '${diff.inDays}d';
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(when.day)}/${two(when.month)}';
+    return '${when.day}/${when.month}';
   }
 
   (IconData, Color, Color) _statusVisuals(BuildContext ctx, AppointmentStatus st) {
@@ -373,7 +438,6 @@ class _RecentActivityCard extends StatelessWidget {
       case AppointmentStatus.PENDING:
         final c = cs.tertiary ?? cs.primary;
         return (Icons.schedule_rounded, c, c.withOpacity(0.1));
-      case AppointmentStatus.CONFIRMED:
       default:
         return (Icons.medical_services_outlined, cs.primary, cs.primary.withOpacity(0.1));
     }
@@ -382,20 +446,16 @@ class _RecentActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final cs = theme.colorScheme;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.onPrimary,
+        color: cs.onPrimary,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: cs.shadow.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -404,21 +464,15 @@ class _RecentActivityCard extends StatelessWidget {
           Text('Actividad Reciente',
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 18),
-
           if (items.isEmpty)
-            Text(
-              'Aún no tienes actividad reciente.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
-              ),
-            ),
-
+            Text('Aún no tienes actividad reciente.',
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7))),
           for (final it in items) ...[
             Builder(builder: (ctx) {
               final (icon, icColor, bg) = _statusVisuals(ctx, it.status);
-              final subtitle = (it.reason?.isNotEmpty ?? false)
-                  ? it.reason!
-                  : 'Consulta ${it.status.name.toLowerCase()}';
+              final subtitle =
+                  (it.reason?.isNotEmpty ?? false) ? it.reason! : 'Consulta ${it.status.name.toLowerCase()}';
               return _ActivityItem(
                 icon: icon,
                 iconBackground: bg,
@@ -462,17 +516,13 @@ class _ActivityItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           height: 48,
           width: 48,
-          decoration: BoxDecoration(
-            color: iconBackground,
-            borderRadius: BorderRadius.circular(12),
-          ),
+          decoration: BoxDecoration(color: iconBackground, borderRadius: BorderRadius.circular(12)),
           child: Icon(icon, color: iconColor, size: 28),
         ),
         const SizedBox(width: 16),
@@ -482,12 +532,9 @@ class _ActivityItem extends StatelessWidget {
             children: [
               Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
-                ),
-              ),
+              Text(subtitle,
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7))),
             ],
           ),
         ),
@@ -496,10 +543,7 @@ class _ActivityItem extends StatelessWidget {
           decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(30)),
           child: Text(
             badgeText,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: badgeTextColor,
-            ),
+            style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold, color: badgeTextColor),
           ),
         ),
       ],

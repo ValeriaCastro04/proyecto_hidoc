@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Traemos los providers desde main.dart
 import 'package:proyecto_hidoc/main.dart' show dioProvider, tokenStorageProvider;
+import 'package:proyecto_hidoc/services/token_storage.dart';
 
 import 'package:proyecto_hidoc/common/layout/scroll_fill.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/app_logo.dart';
@@ -38,7 +40,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _loading = false;
   String? _errorText;
 
-  // Usamos el enum del toggle
+  // Usamos el enum del toggle (UI informativa; el backend no lo requiere para login)
   seg.UserRole _role = seg.UserRole.patient;
 
   @override
@@ -71,6 +73,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
+  Future<void> _cacheUserInfo(Map<String, dynamic> user) async {
+    try {
+      final sp = await SharedPreferences.getInstance();
+      final name = (user['name'] ?? '').toString();
+      final role = (user['role'] ?? '').toString();
+      final email = (user['email'] ?? '').toString();
+
+      if (name.isNotEmpty) await sp.setString('user_name', name);
+      if (role.isNotEmpty) await sp.setString('user_role', role);
+      if (email.isNotEmpty) await sp.setString('user_email', email);
+    } catch (_) {
+      // no bloquear flujo por cache fallida
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -97,8 +114,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         throw Exception('Respuesta inválida del servidor');
       }
 
+      // Guarda tokens en Riverpod storage (FlutterSecureStorage)
       await storage.save(access: access, refresh: refresh);
 
+      // Guarda tokens también en SharedPreferences (ApiClient.dio usa esto)
+      try {
+        await TokenStorage.saveAccessToken(access);
+        await TokenStorage.saveRefreshToken(refresh);
+      } catch (_) {}
+
+      // Cachea nombre/rol/email para el saludo inmediato del Home
+      await _cacheUserInfo(user);
+
+      // Navega según rol
       final role = (user['role'] as String?)?.toUpperCase() ?? 'PATIENT';
       if (!mounted) return;
       if (role == 'DOCTOR') {
@@ -228,8 +256,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                           const SizedBox(height: 16),
 
-                          // No usamos `enabled` porque IconTextField no lo soporta.
-                          // En su lugar, ignoramos interacción si _loading = true.
                           IgnorePointer(
                             ignoring: _loading,
                             child: Column(
