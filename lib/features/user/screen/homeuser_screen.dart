@@ -375,6 +375,7 @@ class _HomeHeader extends StatelessWidget {
               color: cs.onPrimary.withOpacity(0.85),
             ),
           ),
+          const SizedBox(height: 10),
         ],
       ),
     );
