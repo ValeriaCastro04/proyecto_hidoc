@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decode/jwt_decode.dart';
+import 'features/doctor/services/api_service.dart';
 
 import 'package:proyecto_hidoc/config/router/app_router.dart';
 import 'package:proyecto_hidoc/common/theme/app_theme.dart';
@@ -18,6 +19,14 @@ import 'package:proyecto_hidoc/common/theme/theme_provider.dart';
 /// - Android emulator: 10.0.2.2
 /// - iOS simulator: localhost
 /// - Dispositivo físico: IP de tu PC
+/// 
+final apiServiceProvider = Provider<ApiService>((ref) {
+  // 1. Escucha el dioProvider
+  final dio = ref.watch(dioProvider);
+  
+  // 2. Crea ApiService y le "inyecta" el dio
+  return ApiService(dio);
+});
 final baseUrlProvider = Provider<String>((ref) {
   const envUrl = String.fromEnvironment('API_URL'); // opcional: --dart-define
   if (envUrl.isNotEmpty) return envUrl;

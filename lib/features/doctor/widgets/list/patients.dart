@@ -1,5 +1,46 @@
 final List<Map<String, dynamic>> Patients = [
   {
+    "name": "Roberto Antonio Chávez Delgado",
+    "initials": "RC",
+    "correo": "roberto.chavez@ejemplo.com",
+    "telefono": "7000-0000",
+    "numero_DUI": "00000000-0",
+    "historial": [
+      {
+        "fecha_episodio": "2022-07-01",
+        "descripcion_general": "Accidente en motocicleta con fractura en el antebrazo izquierdo.",
+        "resultados_examenes_fisicos": {
+          "detalle": "Deformidad y dolor intenso en antebrazo izquierdo. Pulso radial presente. Radiografía confirma fractura diafisaria de cúbito y radio.",
+        },
+        "diagnosticos": {
+          "detalle": "Fractura cerrada de cúbito y radio (S52.5).",
+        },
+        "tratamientos": {
+          "detalle": "Inmovilización temporal y posterior reducción abierta con fijación interna (RAFI) con placa y tornillos. Analgésicos (Tramadol).",
+        },
+        "evolucion_enfermedad": {
+          "detalle": "Cirugía exitosa. Inicio de rehabilitación post-operatoria a las 4 semanas. Pronóstico de recuperación total en 6 meses."
+        }
+      },
+      {
+        "fecha_episodio": "2023-04-12",
+        "descripcion_general": "Control de ortopedia y remoción de material de osteosíntesis.",
+        "resultados_examenes_fisicos": {
+          "detalle": "Movilidad completa del antebrazo y muñeca. Leve atrofia muscular residual. Radiografía muestra consolidación completa de la fractura.",
+        },
+        "diagnosticos": {
+          "detalle": "Secuela de fractura de antebrazo. Estado post-retiro de material de osteosíntesis (Z47.0).",
+        },
+        "tratamientos": {
+          "detalle": "Procedimiento de retiro de placa y tornillos. Continuar con ejercicios de fortalecimiento en casa. Suspender fisioterapia formal.",
+        },
+        "evolucion_enfermedad": {
+          "detalle": "Recuperación completa de la fuerza y función a los 2 meses post-retiro. Dado de alta por el servicio de ortopedia."
+        }
+      }
+    ]
+  },
+  {
     "name": "Juan Carlos Pérez Gómez",
     "initials": "JP",
     "correo": "juan.perez@ejemplo.com",

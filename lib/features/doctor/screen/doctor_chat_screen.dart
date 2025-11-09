@@ -351,30 +351,7 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    const String doctorName = 'Dra. Elena Martínez';
-    
     return Scaffold(
-      appBar: HeaderBar.brand(
-        logoAsset: 'assets/brand/hidoc_logo.png',
-        title: doctorName,
-        actions: [
-          const ThemeToggleButton(),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.notifications_none_rounded, color: colors.onSurface),
-          ),
-          const SizedBox(width: 8),
-          CircleAvatar(
-            backgroundColor: colors.primary,
-            foregroundColor: colors.onPrimary,
-            child: Text(
-              doctorName.split(' ').map((e) => e[0]).take(2).join(),
-            ),
-          ),
-          const SizedBox(width: 16),
-        ],
-      ),
       body: Column(
         children: [
           DoctorChatHeader(
@@ -470,7 +447,6 @@ class DoctorChatHeader extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      color: colors.onPrimary,
       child: SafeArea(
         bottom: false,
         child: Row(
@@ -490,7 +466,6 @@ class DoctorChatHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(patientName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const Text('Paciente'),
                 ],
               ),
             ),
