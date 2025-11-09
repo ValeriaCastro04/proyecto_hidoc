@@ -5,6 +5,7 @@ class Patient {
   final String lastName;
   final String? email;
   final DateTime birthDate;
+  final String? phone;
   // Añade otros campos si los necesitas en la UI
 
   Patient({
@@ -13,6 +14,7 @@ class Patient {
     required this.lastName,
     this.email,
     required this.birthDate,
+    this.phone,
   });
 
   // Método para combinar nombre y apellido
@@ -25,6 +27,7 @@ class Patient {
       lastName: json['lastName'],
       email: json['email'],
       birthDate: DateTime.parse(json['birthDate']),
+      phone: json['phone'],
     );
   }
 }
