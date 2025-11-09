@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+<<<<<<< Updated upstream
+=======
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_hidoc/providers/chat_provider.dart';
+
+>>>>>>> Stashed changes
 
 // Importaciones de los widgets que ya creamos
 // Nota: En tu proyecto real, asegúrate de importar estos widgets desde sus archivos correspondientes:
@@ -58,10 +65,12 @@ class _PatientChatScreenState extends State<PatientChatScreen> {
   @override
   void initState() {
     super.initState();
-    // QUÉ HACE: Inicializa la pantalla con datos de ejemplo y carga inicial
-    // CÓMO LO HACE: Establece mensajes de prueba y simula una conversación
-    // real que el paciente vería al entrar al chat médico
-    _initializeChat();
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    chatProvider.connect(1);
+
+    chatProvider.addListener(() {
+      setState(() {});
+    });
   }
 
   /// Inicializa el chat con mensajes de ejemplo
@@ -104,22 +113,29 @@ class _PatientChatScreenState extends State<PatientChatScreen> {
       _isSendingMessage = true;
     });
 
-    // Añadir mensaje del paciente
-    final newMessage = ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      message: messageText,
-      time: _getCurrentTime(),
-      isFromDoctor: false,
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    chatProvider.sendMessage(
+      1, // ID del paciente (temporal)
+      int.parse(widget.doctorId), // ID del doctor (viene del widget)
+      messageText,
     );
 
-    setState(() {
-      _messages.add(newMessage);
-    });
+    // Añadir mensaje del paciente
+    //final newMessage = ChatMessage(
+    //  id: DateTime.now().millisecondsSinceEpoch.toString(),
+    //  message: messageText,
+    //  time: _getCurrentTime(),
+    //  isFromDoctor: false,
+    //);
+
+    //setState(() {
+    //  _messages.add(newMessage);
+    //});
 
     // Simular respuesta del doctor después de un delay
-    await Future.delayed(const Duration(seconds: 2));
+    //await Future.delayed(const Duration(seconds: 2));
     
-    _simulateDoctorResponse(messageText);
+    //_simulateDoctorResponse(messageText);
     
     setState(() {
       _isSendingMessage = false;
@@ -127,40 +143,40 @@ class _PatientChatScreenState extends State<PatientChatScreen> {
   }
 
   /// Simula una respuesta automática del doctor
-  void _simulateDoctorResponse(String patientMessage) {
+  //void _simulateDoctorResponse(String patientMessage) {
     // QUÉ HACE: Genera respuestas automáticas del doctor para simular conversación
     // CÓMO LO HACE: Analiza el mensaje del paciente y proporciona respuestas
     // médicas apropiadas para mantener el flujo de la conversación demo
-    String doctorResponse;
+  //  String doctorResponse;
     
-    if (patientMessage.toLowerCase().contains('dolor')) {
-      doctorResponse = 'Entiendo tu preocupación. ¿Desde cuándo comenzó este dolor y en qué situaciones empeora?';
-    } else if (patientMessage.toLowerCase().contains('gracias')) {
-      doctorResponse = 'De nada. ¿Hay algo más en lo que pueda ayudarte hoy?';
-    } else {
-      doctorResponse = 'Gracias por la información. Esto me ayuda a entender mejor tu situación.';
-    }
+  //  if (patientMessage.toLowerCase().contains('dolor')) {
+  //    doctorResponse = 'Entiendo tu preocupación. ¿Desde cuándo comenzó este dolor y en qué situaciones empeora?';
+  //  } else if (patientMessage.toLowerCase().contains('gracias')) {
+  //    doctorResponse = 'De nada. ¿Hay algo más en lo que pueda ayudarte hoy?';
+  //  } else {
+  //    doctorResponse = 'Gracias por la información. Esto me ayuda a entender mejor tu situación.';
+  //  }
 
-    final doctorMessage = ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      message: doctorResponse,
-      time: _getCurrentTime(),
-      isFromDoctor: true,
-    );
+  //  final doctorMessage = ChatMessage(
+  //    id: DateTime.now().millisecondsSinceEpoch.toString(),
+  //    message: doctorResponse,
+  //    time: _getCurrentTime(),
+  //    isFromDoctor: true,
+  //  );
 
-    setState(() {
-      _messages.add(doctorMessage);
-    });
-  }
+  //  setState(() {
+  //    _messages.add(doctorMessage);
+  //  });
+  //}
 
   /// Obtiene la hora actual en formato HH:mm
-  String _getCurrentTime() {
+  //String _getCurrentTime() {
     // QUÉ HACE: Genera timestamp actual para los mensajes nuevos
     // CÓMO LO HACE: DateTime.now() formateado a HH:mm para mostrar
     // la hora exacta de envío de cada mensaje
-    final now = DateTime.now();
-    return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-  }
+  //  final now = DateTime.now();
+  //  return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+  //}
 
   /// Maneja la carga de mensajes anteriores
   void _loadMoreMessages() {

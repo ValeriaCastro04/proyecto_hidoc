@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
+<<<<<<< Updated upstream
+=======
+import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_hidoc/providers/chat_provider.dart';
+
+>>>>>>> Stashed changes
 
 /// Pantalla completa del chat médico para el doctor
 class DoctorChatScreen extends StatefulWidget {
@@ -29,7 +36,12 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeChat();
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    chatProvider.connect(2);
+
+    chatProvider.addListener(() {
+    setState(() {}); // refresca UI cuando lleguen mensajes nuevos
+  });
   }
 
   void _initializeChat() {
