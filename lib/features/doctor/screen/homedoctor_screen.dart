@@ -19,13 +19,10 @@ class HomeDoctorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final doctor = Doctor;
-    final String doctorName = doctor[0]['name'];
 
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
-        title: doctor[0]['name'],
         actions: [
           ThemeToggleButton(), 
           IconButton(
@@ -37,7 +34,7 @@ class HomeDoctorScreen extends StatelessWidget {
             backgroundColor: colors.primary,
             foregroundColor: colors.onPrimary,
             child: Text(
-              doctorName.split(' ').map((e) => e[0]).take(2).join(),
+              'Dr.'
             ),
           ),
           const SizedBox(width: 16),

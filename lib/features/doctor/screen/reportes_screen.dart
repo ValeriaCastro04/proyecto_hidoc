@@ -33,7 +33,6 @@ class ReportesScreen extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
     final doctor = Doctor[0]; // Tomamos el primer doctor
     final profileTabs = doctor['profile_tabs'];
-    final String doctorName = doctor['name'];
 
     // Ingresos simulados
     final List<double> ingresos = [
@@ -69,7 +68,6 @@ class ReportesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
-        title: doctorName,
         actions: [
           ThemeToggleButton(),
           IconButton(
@@ -84,7 +82,7 @@ class ReportesScreen extends ConsumerWidget {
             backgroundColor: colors.primary,
             foregroundColor: colors.onPrimary,
             child: Text(
-              doctorName.split(' ').map((e) => e[0]).take(2).join(),
+              'Dr.'
             ),
           ),
           const SizedBox(width: 16),

@@ -289,13 +289,9 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     // Ya no usamos mocks
     // final appointments = _getAppointmentsForDay(_selectedDay);
 
-    final doctor = Doctor; // Asumo que esto es un mock de info de doctor
-    final String doctorName = doctor[0]['name'];
-
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
-        title: doctorName,
         actions: [
           ThemeToggleButton(),
           IconButton(
@@ -310,7 +306,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             backgroundColor: colors.primary,
             foregroundColor: colors.onPrimary,
             child: Text(
-              doctorName.split(' ').map((e) => e[0]).take(2).join(),
+              'Dr.'
             ),
           ),
           const SizedBox(width: 16),
