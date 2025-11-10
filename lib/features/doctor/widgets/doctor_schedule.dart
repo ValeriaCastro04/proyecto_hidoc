@@ -34,7 +34,7 @@ class ScheduleTab extends StatelessWidget {
 
         ListView.separated(
           shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(), // 🔑 evita conflicto
+          physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: schedule.length,
           separatorBuilder: (_, __) => const SizedBox(height: 8),

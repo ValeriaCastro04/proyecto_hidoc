@@ -14,6 +14,10 @@ import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 import 'package:proyecto_hidoc/services/api_client.dart';
 import 'package:proyecto_hidoc/services/token_storage.dart';
 
+import 'package:proyecto_hidoc/features/user/services/doctor_service.dart';
+import 'package:proyecto_hidoc/features/user/models/doctor_category.dart';
+import 'package:proyecto_hidoc/features/user/widgets/quick_actions_user.dart';
+
 /* ===========================
    Models
    =========================== */
@@ -375,6 +379,7 @@ class _HomeHeader extends StatelessWidget {
               color: cs.onPrimary.withOpacity(0.85),
             ),
           ),
+          const SizedBox(height: 10),
         ],
       ),
     );
@@ -404,10 +409,29 @@ class _QuickActionsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Nueva Consulta',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            'Nueva Consulta',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
-          const QuickActionsUser(),
+
+          FutureBuilder<List<DoctorCategoryDto>>(
+            future: DoctorService().fetchCategories(),
+            builder: (context, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final categories = snap.data ?? const <DoctorCategoryDto>[];
+              if (categories.isEmpty) {
+                return Text(
+                  'No hay categorías disponibles por ahora',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                );
+              }
+              // Importante: quita el `const` porque ahora hay parámetros dinámicos.
+              return QuickActionsUser(categories: categories);
+            },
+          ),
         ],
       ),
     );
