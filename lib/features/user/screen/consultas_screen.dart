@@ -8,6 +8,7 @@ import 'package:proyecto_hidoc/features/user/services/doctor_service.dart';
 import 'package:proyecto_hidoc/features/user/models/doctor_category.dart';
 import 'package:proyecto_hidoc/services/token_storage.dart';
 import 'package:go_router/go_router.dart';
+import 'package:proyecto_hidoc/config/router/router_notifier.dart';
 
 class ConsultasScreen extends StatelessWidget {
   const ConsultasScreen({super.key});
@@ -41,6 +42,9 @@ class ConsultasScreen extends StatelessWidget {
                 context.go('/perfil');
               } else if (v == 'logout') {
                 await TokenStorage.clear();
+                // actualiza el notifier global para evitar redirecciones incorrectas
+                routerNotifier.isLoggedIn = false;
+                routerNotifier.isDoctor = false;
                 if (context.mounted) context.go('/auth/login');
               }
             },

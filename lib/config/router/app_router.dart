@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:proyecto_hidoc/config/router/router_notifier.dart';
 
 // AUTH
 import 'package:proyecto_hidoc/features/auth/screen/welcome_screen.dart';
@@ -30,6 +31,8 @@ import 'package:proyecto_hidoc/features/user/models/payment_models.dart';
 final GoRouter appRouter = GoRouter(
   // arranque en la pantalla de bienvenida
   initialLocation: '/welcome',
+  refreshListenable: routerNotifier,
+  redirect: routerNotifier.redirect,
   routes: [
     GoRoute(
       path: '/welcome',

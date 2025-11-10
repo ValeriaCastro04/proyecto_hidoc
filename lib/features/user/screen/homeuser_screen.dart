@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:proyecto_hidoc/features/user/widgets/footer_user.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer.dart';
-import 'package:proyecto_hidoc/features/user/widgets/quick_actions_user.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/gradient_background.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
@@ -17,6 +16,8 @@ import 'package:proyecto_hidoc/services/token_storage.dart';
 import 'package:proyecto_hidoc/features/user/services/doctor_service.dart';
 import 'package:proyecto_hidoc/features/user/models/doctor_category.dart';
 import 'package:proyecto_hidoc/features/user/widgets/quick_actions_user.dart';
+import 'package:go_router/go_router.dart';
+import 'package:proyecto_hidoc/config/router/router_notifier.dart';
 
 /* ===========================
    Models
@@ -290,10 +291,42 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
             icon: Icon(Icons.notifications_none_rounded, color: cs.onSurface),
           ),
           const SizedBox(width: 8),
-          CircleAvatar(
-            backgroundColor: cs.primary,
-            foregroundColor: cs.onPrimary,
-            child: Text(initialLetter),
+            PopupMenuButton<String>(
+              tooltip: 'Cuenta',
+              position: PopupMenuPosition.under,
+              onSelected: (v) async {
+                if (v == 'profile') {
+                  context.go('/perfil');
+                } else if (v == 'logout') {
+                  await TokenStorage.clear();
+                  // Actualiza notifier global para que las redirecciones no bloqueen el flujo
+                  routerNotifier.isLoggedIn = false;
+                  routerNotifier.isDoctor = false;
+                  if (context.mounted) context.go('/auth/login');
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: 'profile', child: Text('Perfil')),
+                PopupMenuDivider(),
+                PopupMenuItem(
+                  value: 'logout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout_rounded, size: 18),
+                      SizedBox(width: 8),
+                      Text('Cerrar sesión'),
+                    ],
+                  ),
+                ),
+              ],
+              child: Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: CircleAvatar(
+                  backgroundColor: cs.primary,
+                  foregroundColor: cs.onPrimary,
+                  child: Text(initialLetter, style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
           ),
         ],
       ),
@@ -556,9 +589,8 @@ class _ActivityItem extends StatelessWidget {
             children: [
               Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              Text(subtitle,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7))),
+              Text(subtitle, style: theme.textTheme.bodySmall?.copyWith(color: theme.textTheme.bodySmall?.color?.withOpacity(0.7))),
+              const SizedBox(height: 6),
             ],
           ),
         ),

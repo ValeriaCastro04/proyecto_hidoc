@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'token_storage.dart';
+import 'package:proyecto_hidoc/config/router/router_notifier.dart';
 
 class ApiClient {
   static final Dio dio = Dio(
@@ -75,6 +76,9 @@ class ApiClient {
           } catch (err) {
             // falló el refresh → limpiar tokens y propagar 401
             await TokenStorage.clear();
+            // informar al notifier global que no hay sesión
+            routerNotifier.isLoggedIn = false;
+            routerNotifier.isDoctor = false;
             for (final q in _queue) {
               q.completer.completeError(e);
             }

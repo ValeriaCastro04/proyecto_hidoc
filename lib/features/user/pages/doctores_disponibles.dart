@@ -10,6 +10,7 @@ import 'package:proyecto_hidoc/features/user/models/doctor_model.dart';
 import 'package:proyecto_hidoc/features/user/services/doctor_service.dart';
 
 import 'package:proyecto_hidoc/services/token_storage.dart';
+import 'package:proyecto_hidoc/config/router/router_notifier.dart';
 
 import 'package:proyecto_hidoc/features/user/pages/pago_page.dart';
 
@@ -58,6 +59,8 @@ class DoctoresDisponiblesPage extends StatelessWidget {
                 context.go('/perfil');
               } else if (v == 'logout') {
                 await TokenStorage.clear();
+                routerNotifier.isLoggedIn = false;
+                routerNotifier.isDoctor = false;
                 if (context.mounted) context.go('/auth/login');
               }
             },

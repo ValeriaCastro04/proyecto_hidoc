@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:proyecto_hidoc/main.dart' show dioProvider, tokenStorageProvider;
 import 'package:proyecto_hidoc/services/token_storage.dart';
+import 'package:proyecto_hidoc/config/router/router_notifier.dart';
 
 import 'package:proyecto_hidoc/common/layout/scroll_fill.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/app_logo.dart';
@@ -126,6 +127,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Navega según rol
       if (!mounted) return;
       final roleUpper = roleStr.toUpperCase();
+      // Actualiza el notifier global para que las redirecciones permitan el nuevo estado
+      routerNotifier.isLoggedIn = true;
+      routerNotifier.isDoctor = (roleUpper == 'DOCTOR');
       if (roleUpper == 'DOCTOR') {
         context.goNamed(HomeDoctorScreen.name);
       } else {
