@@ -9,7 +9,7 @@ import 'package:proyecto_hidoc/common/shared_widgets/app_logo.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/auth_card.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/icon_text_field.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/segmented_role_toggle.dart'
-    as role; // alias para el enum UserRole
+    as role;
 import 'package:proyecto_hidoc/common/global_widgets/solid_button.dart';
 
 import 'package:proyecto_hidoc/features/auth/screen/login_screen.dart';
