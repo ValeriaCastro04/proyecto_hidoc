@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../sevices/socket_service.dart';
+import '../services/socket_service.dart';
 
 class ChatProvider extends ChangeNotifier {
   final SocketService _socketService = SocketService();
@@ -21,8 +21,8 @@ class ChatProvider extends ChangeNotifier {
 
   void sendMessage(int senderId, int receiverId, String text) {
     if (text.trim().isEmpty) return;
-    _socketService.sendMessage(senderId, receiverId, text);
 
+    _socketService.sendMessage(senderId, receiverId, text);
     _messages.add({'from': senderId, 'content': text});
     notifyListeners();
   }

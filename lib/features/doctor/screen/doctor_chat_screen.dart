@@ -5,9 +5,7 @@ import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 import 'package:provider/provider.dart';
 import 'package:proyecto_hidoc/providers/chat_provider.dart';
-import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
 
-/// Pantalla completa del chat médico para el doctor
 class DoctorChatScreen extends StatefulWidget {
   final String patientId;
   final String patientName;
@@ -26,7 +24,6 @@ class DoctorChatScreen extends StatefulWidget {
 
 class _DoctorChatScreenState extends State<DoctorChatScreen> {
   DoctorChatTab _selectedTab = DoctorChatTab.chat;
-  List<ChatMessage> _messages = [];
   bool _isLoadingMessages = false;
   bool _isSendingMessage = false;
 
@@ -35,84 +32,15 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
     super.initState();
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
     chatProvider.connect(2);
-
-    chatProvider.addListener(() {
-    setState(() {}); // refresca UI cuando lleguen mensajes nuevos
-  });
-  }
-
-  void _initializeChat() {
-    setState(() {
-      _messages = [
-        ChatMessage(
-          id: '1',
-          message: 'Hola ${widget.patientName}, soy la Dra. Elena Martínez. ¿En qué puedo ayudarte hoy?',
-          time: '10:30',
-          isFromDoctor: true,
-        ),
-        ChatMessage(
-          id: '2',
-          message: 'Hola doctora, he tenido dolor de cabeza frecuente los últimos días.',
-          time: '10:31',
-          isFromDoctor: false,
-        ),
-        ChatMessage(
-          id: '3',
-          message: 'Entiendo tu preocupación. ¿Podrías describirme mejor el tipo de dolor? ¿Es pulsátil, constante, o viene y va?',
-          time: '10:32',
-          isFromDoctor: true,
-        ),
-      ];
-    });
+    chatProvider.addListener(() => setState(() {}));
   }
 
   void _sendMessage(String messageText) async {
     if (messageText.trim().isEmpty) return;
-
-    setState(() {
-      _isSendingMessage = true;
-    });
-
-    final newMessage = ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      message: messageText,
-      time: _getCurrentTime(),
-      isFromDoctor: true,
-    );
-
-    setState(() {
-      _messages.add(newMessage);
-      _isSendingMessage = false;
-    });
-  }
-
-  String _getCurrentTime() {
-    final now = DateTime.now();
-    return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-  }
-
-  void _loadMoreMessages() {
-    if (_isLoadingMessages) return;
-
-    setState(() {
-      _isLoadingMessages = true;
-    });
-
-    Future.delayed(const Duration(seconds: 1), () {
-      final oldMessages = [
-        ChatMessage(
-          id: 'old_${_messages.length + 1}',
-          message: 'Mensaje anterior de la conversación.',
-          time: '09:${55 - _messages.length}',
-          isFromDoctor: _messages.length % 2 == 1,
-        ),
-      ];
-
-      setState(() {
-        _messages.insertAll(0, oldMessages);
-        _isLoadingMessages = false;
-      });
-    });
+    setState(() => _isSendingMessage = true);
+    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    chatProvider.sendMessage(2, int.parse(widget.patientId), messageText);
+    setState(() => _isSendingMessage = false);
   }
 
   void _handleDoctorAction(String action) {
@@ -136,40 +64,20 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
         title: const Text('Crear Receta Médica'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Medicamento',
-                hintText: 'Ej: Ibuprofeno 400mg',
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Dosis',
-                hintText: 'Ej: 1 tableta cada 8 horas',
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Duración',
-                hintText: 'Ej: 5 días',
-              ),
-            ),
+          children: const [
+            TextField(decoration: InputDecoration(labelText: 'Medicamento')),
+            SizedBox(height: 12),
+            TextField(decoration: InputDecoration(labelText: 'Dosis')),
+            SizedBox(height: 12),
+            TextField(decoration: InputDecoration(labelText: 'Duración')),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Receta creada y enviada al paciente')),
-              );
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Receta creada y enviada al paciente')));
             },
             child: const Text('Crear Receta'),
           ),
@@ -183,27 +91,15 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Agregar Nota Médica'),
-        content: TextField(
-          maxLines: 4,
-          decoration: const InputDecoration(
-            labelText: 'Nota',
-            hintText: 'Escriba sus observaciones médicas...',
-            border: OutlineInputBorder(),
-          ),
-        ),
+        content: const TextField(maxLines: 4, decoration: InputDecoration(border: OutlineInputBorder(), hintText: 'Escriba sus observaciones...')),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Nota médica guardada')),
-              );
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nota médica guardada')));
             },
-            child: const Text('Guardar Nota'),
+            child: const Text('Guardar'),
           ),
         ],
       ),
@@ -215,16 +111,13 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Finalizar Consulta'),
-        content: const Text('¿Está seguro de que desea finalizar esta consulta médica?'),
+        content: const Text('¿Desea finalizar esta consulta médica?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             child: const Text('Finalizar'),
@@ -235,13 +128,10 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
   }
 
   Widget _buildTabContent() {
+    final chatProvider = Provider.of<ChatProvider>(context);
     switch (_selectedTab) {
       case DoctorChatTab.chat:
-        return DoctorMessageList(
-          messages: _messages,
-          isLoading: _isLoadingMessages,
-          onLoadMore: _loadMoreMessages,
-        );
+        return DoctorMessageList(messages: chatProvider.messages, isLoading: _isLoadingMessages);
       case DoctorChatTab.expediente:
         return _buildExpedienteContent();
       case DoctorChatTab.notas:
@@ -252,262 +142,132 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
   Widget _buildExpedienteContent() {
     return Container(
       padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          const Text(
-            'Expediente Médico',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: ListView(
-              children: [
-                _buildExpedienteCard('Información Personal', 'Edad: 35 años\nSexo: Masculino\nPeso: 75kg\nAltura: 1.75m'),
-                _buildExpedienteCard('Alergias', 'Penicilina\nMariscos'),
-                _buildExpedienteCard('Medicamentos Actuales', 'Losartán 50mg/día'),
-                _buildExpedienteCard('Antecedentes', 'Hipertensión arterial\nDiabetes tipo 2 (familiar)'),
-              ],
-            ),
-          ),
-        ],
-      ),
+      child: Column(children: [
+        const Text('Expediente Médico', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 20),
+        Expanded(
+          child: ListView(children: [
+            _buildExpedienteCard('Información Personal', 'Edad: 35 años\nSexo: Masculino\nPeso: 75kg\nAltura: 1.75m'),
+            _buildExpedienteCard('Alergias', 'Penicilina\nMariscos'),
+            _buildExpedienteCard('Medicamentos', 'Losartán 50mg/día'),
+            _buildExpedienteCard('Antecedentes', 'Hipertensión arterial\nDiabetes tipo 2 (familiar)'),
+          ]),
+        ),
+      ]),
     );
   }
 
   Widget _buildNotasMedicasContent() {
     return Container(
       padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Notas Médicas',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              ElevatedButton.icon(
-                onPressed: _addMedicalNote,
-                icon: const Icon(Icons.add),
-                label: const Text('Nueva Nota'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: ListView(
-              children: [
-                _buildNotaCard('Consulta Inicial', 'Paciente refiere cefaleas frecuentes. Dolor constante, empeora con estrés.', '10:30'),
-                _buildNotaCard('Seguimiento', 'Mejoría parcial con tratamiento indicado.', '09:15'),
-                _buildNotaCard('Observaciones', 'Paciente colaborador, sigue indicaciones médicas.', '08:45'),
-              ],
-            ),
-          ),
-        ],
-      ),
+      child: Column(children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          const Text('Notas Médicas', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          ElevatedButton.icon(onPressed: _addMedicalNote, icon: const Icon(Icons.add), label: const Text('Nueva Nota')),
+        ]),
+        const SizedBox(height: 20),
+        Expanded(
+          child: ListView(children: [
+            _buildNotaCard('Consulta Inicial', 'Paciente refiere cefaleas frecuentes.', '10:30'),
+            _buildNotaCard('Seguimiento', 'Mejoría parcial con tratamiento.', '09:15'),
+            _buildNotaCard('Observaciones', 'Paciente colaborador.', '08:45'),
+          ]),
+        ),
+      ]),
     );
   }
 
-  Widget _buildExpedienteCard(String title, String content) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+  Widget _buildExpedienteCard(String title, String content) => Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(content),
-          ],
+          ]),
         ),
-      ),
-    );
-  }
+      );
 
-  Widget _buildNotaCard(String title, String content, String time) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  time,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
+  Widget _buildNotaCard(String title, String content, String time) => Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(time, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            ]),
             const SizedBox(height: 8),
             Text(content),
-          ],
+          ]),
         ),
-      ),
-    );
-  }
+      );
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     const String doctorName = 'Dra. Elena Martínez';
-    
+
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
         title: doctorName,
         actions: [
           const ThemeToggleButton(),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.notifications_none_rounded, color: colors.onSurface),
-          ),
+          IconButton(onPressed: () {}, icon: Icon(Icons.notifications_none_rounded, color: colors.onSurface)),
           const SizedBox(width: 8),
-          CircleAvatar(
-            backgroundColor: colors.primary,
-            foregroundColor: colors.onPrimary,
-            child: Text(
-              doctorName.split(' ').map((e) => e[0]).take(2).join(),
-            ),
-          ),
+          CircleAvatar(backgroundColor: colors.primary, foregroundColor: colors.onPrimary, child: Text('EM')),
           const SizedBox(width: 16),
         ],
       ),
-      body: Column(
-        children: [
-          DoctorChatHeader(
-            patientName: widget.patientName,
-            patientInitials: widget.patientInitials,
-            onBackPressed: () => Navigator.of(context).pop(),
-            onCallPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Iniciando llamada con paciente...')),
-              );
-            },
-            onVideoPressed: () {
-              setState(() {
-                _selectedTab = DoctorChatTab.chat;
-              });
-            },
-            onMenuPressed: () {},
-          ),
-          
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: DoctorChatTabNavigator(
-              selectedTab: _selectedTab,
-              onTabChanged: (tab) {
-                setState(() {
-                  _selectedTab = tab;
-                });
-              },
-            ),
-          ),
-          
-          Expanded(
-            child: _buildTabContent(),
-          ),
-          
-          if (_selectedTab == DoctorChatTab.chat)
-            DoctorChatInput(
-              onSendMessage: _sendMessage,
-              onAttachFile: () => _handleDoctorAction('nota'),
-              onTakePhoto: () {},
-            ),
-            
-          DoctorBottomActionBar(
-            onRecetaPressed: () => _handleDoctorAction('receta'),
-            onNotaPressed: () => _handleDoctorAction('nota'),
-            onFinalizarPressed: () => _handleDoctorAction('finalizar'),
-          ),
-        ],
-      ),
+      body: Column(children: [
+        DoctorChatHeader(
+          patientName: widget.patientName,
+          patientInitials: widget.patientInitials,
+          onBackPressed: () => Navigator.pop(context),
+          onCallPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Iniciando llamada...'))),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: DoctorChatTabNavigator(selectedTab: _selectedTab, onTabChanged: (tab) => setState(() => _selectedTab = tab)),
+        ),
+        Expanded(child: _buildTabContent()),
+        if (_selectedTab == DoctorChatTab.chat)
+          DoctorChatInput(onSendMessage: _sendMessage, onAttachFile: () => _handleDoctorAction('nota'), onTakePhoto: () {}),
+        DoctorBottomActionBar(
+          onRecetaPressed: () => _handleDoctorAction('receta'),
+          onNotaPressed: () => _handleDoctorAction('nota'),
+          onFinalizarPressed: () => _handleDoctorAction('finalizar'),
+        ),
+      ]),
       bottomNavigationBar: FooterGroup(buttons: doctorFooterButtons(context)),
     );
   }
 }
 
-// ===== CLASES DE SOPORTE =====
-
 enum DoctorChatTab { chat, expediente, notas }
 
-class ChatMessage {
-  final String id;
-  final String message;
-  final String time;
-  final bool isFromDoctor;
-
-  const ChatMessage({
-    required this.id,
-    required this.message,
-    required this.time,
-    required this.isFromDoctor,
-  });
-}
-
 class DoctorChatHeader extends StatelessWidget {
-  final String patientName;
-  final String patientInitials;
-  final VoidCallback? onBackPressed;
-  final VoidCallback? onCallPressed;
-  final VoidCallback? onVideoPressed;
-  final VoidCallback? onMenuPressed;
-
-  const DoctorChatHeader({
-    Key? key,
-    required this.patientName,
-    required this.patientInitials,
-    this.onBackPressed,
-    this.onCallPressed,
-    this.onVideoPressed,
-    this.onMenuPressed,
-  }) : super(key: key);
-
+  final String patientName, patientInitials;
+  final VoidCallback? onBackPressed, onCallPressed;
+  const DoctorChatHeader({Key? key, required this.patientName, required this.patientInitials, this.onBackPressed, this.onCallPressed}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       color: colors.onPrimary,
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: onBackPressed,
-              icon: const Icon(Icons.arrow_back),
-            ),
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: colors.primary.withOpacity(.15),
-              child: Icon(Icons.person, color: colors.primary),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(patientName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const Text('Paciente'),
-                ],
-              ),
-            ),
-            IconButton(onPressed: onCallPressed, icon: const Icon(Icons.phone)),
-            IconButton(onPressed: onVideoPressed, icon: const Icon(Icons.videocam)),
-            IconButton(onPressed: onMenuPressed, icon: const Icon(Icons.more_vert)),
-          ],
-        ),
-      ),
+      child: Row(children: [
+        IconButton(onPressed: onBackPressed, icon: const Icon(Icons.arrow_back)),
+        CircleAvatar(radius: 28, backgroundColor: colors.primary.withOpacity(.15), child: Icon(Icons.person, color: colors.primary)),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(patientName, style: const TextStyle(fontWeight: FontWeight.bold)),
+          const Text('Paciente'),
+        ])),
+        IconButton(onPressed: onCallPressed, icon: const Icon(Icons.phone)),
+      ]),
     );
   }
 }
@@ -515,60 +275,25 @@ class DoctorChatHeader extends StatelessWidget {
 class DoctorChatTabNavigator extends StatelessWidget {
   final DoctorChatTab selectedTab;
   final Function(DoctorChatTab)? onTabChanged;
-
-  const DoctorChatTabNavigator({
-    Key? key,
-    required this.selectedTab,
-    this.onTabChanged,
-  }) : super(key: key);
-
+  const DoctorChatTabNavigator({Key? key, required this.selectedTab, this.onTabChanged}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: colors.onPrimary,
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: colors.outline.withOpacity(.15))
-      ),
+      decoration: BoxDecoration(color: colors.onPrimary, borderRadius: BorderRadius.circular(25)),
       child: Row(
         children: DoctorChatTab.values.map((tab) {
           final isActive = selectedTab == tab;
-          String tabName;
-          switch (tab) {
-            case DoctorChatTab.chat:
-              tabName = 'CHAT';
-              break;
-            case DoctorChatTab.expediente:
-              tabName = 'EXPEDIENTE';
-              break;
-            case DoctorChatTab.notas:
-              tabName = 'NOTAS';
-              break;
-          }
-          
+          final name = tab.name.toUpperCase();
           return Expanded(
             child: GestureDetector(
               onTap: () => onTabChanged?.call(tab),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: isActive ? colors.onPrimaryFixedVariant : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Center(
-                  child: Text(
-                    tabName,
-                    style: TextStyle(
-                      color: isActive ? colors.onPrimary : colors.onBackground,
-                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
+                decoration: BoxDecoration(color: isActive ? colors.onPrimaryFixedVariant : Colors.transparent, borderRadius: BorderRadius.circular(20)),
+                child: Center(child: Text(name, style: TextStyle(color: isActive ? colors.onPrimary : colors.onBackground, fontWeight: isActive ? FontWeight.bold : FontWeight.normal))),
               ),
             ),
           );
@@ -579,21 +304,12 @@ class DoctorChatTabNavigator extends StatelessWidget {
 }
 
 class DoctorMessageList extends StatelessWidget {
-  final List<ChatMessage> messages;
+  final List<Map<String, dynamic>> messages;
   final bool isLoading;
-  final VoidCallback? onLoadMore;
-
-  const DoctorMessageList({
-    Key? key,
-    required this.messages,
-    this.isLoading = false,
-    this.onLoadMore,
-  }) : super(key: key);
-
+  const DoctorMessageList({Key? key, required this.messages, this.isLoading = false}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-
     return Container(
       color: colors.secondaryContainer,
       child: ListView.builder(
@@ -601,11 +317,8 @@ class DoctorMessageList extends StatelessWidget {
         itemCount: messages.length,
         itemBuilder: (context, index) {
           final message = messages[messages.length - 1 - index];
-          return DoctorChatMessageBubble(
-            message: message.message,
-            time: message.time,
-            isFromDoctor: message.isFromDoctor,
-          );
+          final isFromDoctor = message['from'] == 2;
+          return DoctorChatMessageBubble(message: message['content'], isFromDoctor: isFromDoctor);
         },
       ),
     );
@@ -614,20 +327,11 @@ class DoctorMessageList extends StatelessWidget {
 
 class DoctorChatMessageBubble extends StatelessWidget {
   final String message;
-  final String time;
   final bool isFromDoctor;
-
-  const DoctorChatMessageBubble({
-    Key? key,
-    required this.message,
-    required this.time,
-    required this.isFromDoctor,
-  }) : super(key: key);
-
+  const DoctorChatMessageBubble({Key? key, required this.message, required this.isFromDoctor}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
@@ -636,17 +340,8 @@ class DoctorChatMessageBubble extends StatelessWidget {
           Flexible(
             child: Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isFromDoctor ? colors.onPrimaryFixedVariant : colors.primaryFixedDim,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(message, style: TextStyle(color: isFromDoctor ? Colors.white : Colors.black)),
-                  Text(time, style: TextStyle(fontSize: 12, color: isFromDoctor ? Colors.white70 : Colors.grey)),
-                ],
-              ),
+              decoration: BoxDecoration(color: isFromDoctor ? colors.onPrimaryFixedVariant : colors.primaryFixedDim, borderRadius: BorderRadius.circular(16)),
+              child: Text(message, style: TextStyle(color: isFromDoctor ? Colors.white : Colors.black)),
             ),
           ),
         ],
@@ -657,16 +352,8 @@ class DoctorChatMessageBubble extends StatelessWidget {
 
 class DoctorChatInput extends StatelessWidget {
   final Function(String)? onSendMessage;
-  final VoidCallback? onAttachFile;
-  final VoidCallback? onTakePhoto;
-
-  const DoctorChatInput({
-    Key? key,
-    this.onSendMessage,
-    this.onAttachFile,
-    this.onTakePhoto,
-  }) : super(key: key);
-
+  final VoidCallback? onAttachFile, onTakePhoto;
+  const DoctorChatInput({Key? key, this.onSendMessage, this.onAttachFile, this.onTakePhoto}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -674,102 +361,37 @@ class DoctorChatInput extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       color: colors.onPrimary,
-      child: Row(
-        children: [
-          IconButton(onPressed: onAttachFile, icon: const Icon(Icons.attach_file)),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: 'Escriba su mensaje médico...',
-                filled: true,
-                fillColor: colors.secondaryContainer,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
-                hintStyle: TextStyle(
-                  color: colors.onSurfaceVariant
-                )
-              ),
-            ),
-          ),
-          IconButton(onPressed: onTakePhoto, icon: const Icon(Icons.camera_alt)),
-          FloatingActionButton(
-            mini: true,
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                onSendMessage?.call(controller.text);
-                controller.clear();
-              }
-            },
-            child: const Icon(Icons.send),
-          ),
-        ],
-      ),
+      child: Row(children: [
+        IconButton(onPressed: onAttachFile, icon: const Icon(Icons.attach_file)),
+        Expanded(child: TextField(controller: controller, decoration: InputDecoration(hintText: 'Escriba su mensaje...', filled: true, fillColor: colors.secondaryContainer, border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none)))),
+        IconButton(onPressed: onTakePhoto, icon: const Icon(Icons.camera_alt)),
+        FloatingActionButton(mini: true, onPressed: () {
+          if (controller.text.isNotEmpty) {
+            onSendMessage?.call(controller.text);
+            controller.clear();
+          }
+        }, child: const Icon(Icons.send)),
+      ]),
     );
   }
 }
 
 class DoctorBottomActionBar extends StatelessWidget {
-  final VoidCallback? onRecetaPressed;
-  final VoidCallback? onNotaPressed;
-  final VoidCallback? onFinalizarPressed;
-
-  const DoctorBottomActionBar({
-    Key? key,
-    this.onRecetaPressed,
-    this.onNotaPressed,
-    this.onFinalizarPressed,
-  }) : super(key: key);
-
+  final VoidCallback? onRecetaPressed, onNotaPressed, onFinalizarPressed;
+  const DoctorBottomActionBar({Key? key, this.onRecetaPressed, this.onNotaPressed, this.onFinalizarPressed}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-
     return Container(
       padding: const EdgeInsets.all(16),
       color: colors.onPrimary,
-      child: Row(
-        children: [
-          Expanded(
-            child: OutlinedButton(
-              onPressed: onRecetaPressed,
-              child: Text(
-                  'Receta',
-                  style: TextStyle(
-                    color: colors.onBackground, 
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: OutlinedButton(
-              onPressed: onNotaPressed,
-              child: Text(
-                'Nota Médica',
-                style: TextStyle(
-                    color: colors.onBackground, 
-                    fontWeight: FontWeight.bold,
-                  ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: onFinalizarPressed,
-              style: ElevatedButton.styleFrom(backgroundColor: colors.primaryContainer),
-              child: Text(
-                  'Finalizar',
-                  style: TextStyle(
-                    color: colors.onBackground, 
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-            ),
-          ),
-        ],
-      ),
+      child: Row(children: [
+        Expanded(child: OutlinedButton(onPressed: onRecetaPressed, child: const Text('Receta'))),
+        const SizedBox(width: 12),
+        Expanded(child: OutlinedButton(onPressed: onNotaPressed, child: const Text('Nota Médica'))),
+        const SizedBox(width: 12),
+        Expanded(child: ElevatedButton(onPressed: onFinalizarPressed, style: ElevatedButton.styleFrom(backgroundColor: colors.primaryContainer), child: const Text('Finalizar'))),
+      ]),
     );
   }
 }

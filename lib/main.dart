@@ -10,21 +10,7 @@ import 'package:jwt_decode/jwt_decode.dart';
 import 'package:proyecto_hidoc/config/router/app_router.dart';
 import 'package:proyecto_hidoc/common/theme/app_theme.dart';
 import 'package:proyecto_hidoc/common/theme/theme_provider.dart';
-import 'package:proyecto_hidoc/providers/chat_provider.dart';
-import 'package:provider/provider.dart';
 
-//void main() {
-//  runApp(const ProviderScope(child: MainApp()));
-//}
-void main(){
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ChatProvider()),
-      ],
-      child: const ProviderScope(child: MainApp()),
-    ),
-  );
 /// ===============================
 /// Providers globales
 /// ===============================
@@ -189,6 +175,7 @@ void main() async {
 
   runApp(const ProviderScope(child: MainApp()));
 }
+
 class MainApp extends ConsumerWidget {
   const MainApp({super.key});
 
