@@ -60,14 +60,13 @@ class ApiService {
     }
   }
 
-  /// GET /doctor/me/profile
+  /// GET /users/me
   Future<Map<String, dynamic>> getMyDoctorProfile() async {
-    try {
-      // El interceptor de Dio se encargará de poner el token automáticamente
-      final response = await _dio.get('/doctors/me/profile'); 
-      return response.data as Map<String, dynamic>;
-    } on DioException catch (e) {
-      throw Exception('Error al cargar el perfil del doctor: ${e.response?.data['message'] ?? e.message}');
-    }
+  try {
+    final response = await _dio.get('/users/me'); 
+    return response.data as Map<String, dynamic>;
+  } on DioException catch (e) {
+    throw Exception('Error al cargar el perfil del doctor: ${e.response?.data['message'] ?? e.message}');
   }
+}
 }
