@@ -40,13 +40,12 @@ class PaymentService {
       'amount': amount,
       'concept': concept,
       'method': method,
-      if (method == 'card')
-        'card': {
-          'pan': cardPan,
-          'exp': cardExp,
-          'cvv': cardCvv,
-          'holder': cardHolder,
-        },
+      if (method == 'card') ...{
+        'cardPan': cardPan,
+        'cardExp': cardExp,
+        'cardCvv': cardCvv,
+        'cardHolder': cardHolder,
+      },
     };
 
     final res = await dio.post('/v1/checkout/consultation', data: body);
