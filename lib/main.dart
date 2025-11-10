@@ -28,6 +28,13 @@ final apiServiceProvider = Provider<ApiService>((ref) {
   // 2. Crea ApiService y le "inyecta" el dio
   return ApiService(dio);
 });
+final doctorProfileProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  // Obtenemos el servicio de API
+  final apiService = ref.watch(apiServiceProvider); // Asegúrate de que apiServiceProvider exista
+  
+  // Llamamos al método que acabamos de corregir
+  return await apiService.getMyDoctorProfile();
+});
 final baseUrlProvider = Provider<String>((ref) {
   const envUrl = String.fromEnvironment('API_URL');
   if (envUrl.isNotEmpty) return envUrl;
