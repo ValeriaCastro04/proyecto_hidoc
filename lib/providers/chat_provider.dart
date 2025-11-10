@@ -10,7 +10,7 @@ class ChatProvider extends ChangeNotifier {
   void connect(String userId) {
     _socketService.connect(userId: userId);
 
-    _socketService.onMessage(userId, (data) {
+    _socketService.onMessage((data) {
       _messages.add({
         'from': data['senderId']?.toString() ?? '',
         'content': data['content'] ?? '',
@@ -18,6 +18,8 @@ class ChatProvider extends ChangeNotifier {
       notifyListeners();
     });
   }
+
+
 
   void sendMessage(String senderId, String receiverId, String text) {
     if (text.trim().isEmpty) return;
