@@ -1,4 +1,3 @@
-import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 
 // AUTH
@@ -26,6 +25,7 @@ import 'package:proyecto_hidoc/features/user/screen/patient_chat_screen.dart';
 // Pages reutilizables de paciente
 import 'package:proyecto_hidoc/features/user/pages/doctores_disponibles.dart';
 import 'package:proyecto_hidoc/features/user/pages/pago_page.dart';
+import 'package:proyecto_hidoc/features/user/models/payment_models.dart';
 
 final GoRouter appRouter = GoRouter(
   // arranque en la pantalla de bienvenida
@@ -97,15 +97,23 @@ final GoRouter appRouter = GoRouter(
       path: '/pago',
       name: PagoPage.name,
       builder: (context, state) {
-        // lee query params: ?concept=Consulta%20m%C3%A9dica&amount=8&type=consulta
+        // lee query params: ?concept=Consulta%20m%C3%A9dica&amount=8&type=consulta&doctorId=123&doctorName=Dr.%20Lopez
         final qp = state.uri.queryParameters;
         final concept = qp['concept'] ?? 'Consulta médica';
         final amount = double.tryParse(qp['amount'] ?? '') ?? 8.0;
         final kind = (qp['type'] == 'membresia')
             ? PaymentKind.membresia
             : PaymentKind.consulta;
+        final doctorId = qp['doctorId'] ?? '';
+        final doctorName = qp['doctorName'] ?? '';
 
-        return PagoPage(concept: concept, amount: amount, kind: kind);
+        return PagoPage(
+          concept: concept,
+          amount: amount,
+          kind: kind,
+          doctorId: doctorId,
+          doctorName: doctorName,
+        );
       },
     ),
 

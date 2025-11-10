@@ -1,50 +1,73 @@
 import 'package:dio/dio.dart';
-import 'package:proyecto_hidoc/features/user/models/doctor_model.dart';
-import 'package:proyecto_hidoc/features/user/models/doctor_category.dart';
 import 'package:proyecto_hidoc/services/api_client.dart';
+import 'package:proyecto_hidoc/features/user/models/doctor_category.dart';
+import 'package:proyecto_hidoc/features/user/models/doctor_model.dart';
 
 class DoctorService {
-  Dio get _dio => ApiClient.dio;
+  final Dio _dio = ApiClient.dio;
 
+  // Categorías: GET /doctors/categories
   Future<List<DoctorCategoryDto>> fetchCategories() async {
-    final r = await _dio.get('/doctors/categories');
-    final data = (r.data is List) ? (r.data as List) : (r.data['data'] ?? []);
-    return data
-        .map<DoctorCategoryDto>((e) => DoctorCategoryDto.fromJson(Map<String, dynamic>.from(e)))
+    final resp = await _dio.get('/doctors/categories');
+    final raw = resp.data;
+    final list = (raw is List) ? raw : <dynamic>[];
+    return list
+        .whereType<Map>()
+        .map((m) => DoctorCategoryDto.fromMap(Map<String, dynamic>.from(m)))
         .toList();
   }
 
-  Future<List<DoctorLite>> fetchDoctorsByCategoryCode(String categoryCode,
-      {int page = 1, int limit = 20}) async {
-    final r = await _dio.get('/doctors', queryParameters: {
+  // Doctores por categoría: GET /doctors?category=GENERAL&page=1&limit=10
+  Future<List<DoctorLite>> fetchDoctorsByCategoryCode(
+    String categoryCode, {
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final resp = await _dio.get('/doctors', queryParameters: {
       'category': categoryCode,
-      'sort': 'createdAt:desc',
       'page': page,
       'limit': limit,
     });
-    final data = (r.data is List) ? (r.data as List) : (r.data['data'] ?? []);
-    final docs = data
-        .map<DoctorLite>((e) => DoctorLite.fromJson(Map<String, dynamic>.from(e)))
+
+    final body = (resp.data is Map) ? Map<String, dynamic>.from(resp.data) : <String, dynamic>{};
+    final data = body['data'];
+    final list = (data is List) ? data : <dynamic>[];
+
+    return list
+        .whereType<Map>()
+        .map((m) => DoctorLite.fromMap(Map<String, dynamic>.from(m)))
         .toList();
-
-    // Primero “no seeded” y luego seeded; después por createdAt desc
-    docs.sort((a, b) {
-      final aSeed = a.isSeeded == true ? 1 : 0;
-      final bSeed = b.isSeeded == true ? 1 : 0;
-      if (aSeed != bSeed) return aSeed.compareTo(bSeed);
-      final aC = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final bC = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      return bC.compareTo(aC);
-    });
-
-    return docs;
   }
 
+  // Disponibilidad: GET /doctors/:id/availability
   Future<List<AvailabilitySlot>> fetchAvailability(String doctorId) async {
-    final r = await _dio.get('/doctors/$doctorId/availability');
-    final data = (r.data is List) ? (r.data as List) : (r.data['data'] ?? []);
-    return data
-        .map<AvailabilitySlot>((e) => AvailabilitySlot.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
+    final resp = await _dio.get('/doctors/$doctorId/availability');
+
+    final raw = resp.data;
+    // Soporta dos formatos: lista plana de slots o agrupado por días
+    if (raw is List) {
+      return raw
+          .whereType<Map>()
+          .map((m) => AvailabilitySlot.fromMap(Map<String, dynamic>.from(m)))
+          .toList();
+    } else if (raw is Map && raw['data'] is List) {
+      // por si algún día regresas { data: [...] }
+      final list = raw['data'] as List;
+      return list
+          .whereType<Map>()
+          .map((m) => AvailabilitySlot.fromMap(Map<String, dynamic>.from(m)))
+          .toList();
+    } else if (raw is List<Map> && raw.isNotEmpty && raw.first['slots'] != null) {
+      // formato agrupado [{ date, slots: [...] }]
+      final List<AvailabilitySlot> acc = [];
+      for (final day in raw) {
+        final slots = day['slots'] as List? ?? const [];
+        acc.addAll(slots
+            .whereType<Map>()
+            .map((m) => AvailabilitySlot.fromMap(Map<String, dynamic>.from(m))));
+      }
+      return acc;
+    }
+    return [];
   }
 }

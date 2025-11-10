@@ -11,6 +11,8 @@ import 'package:proyecto_hidoc/features/user/services/doctor_service.dart';
 
 import 'package:proyecto_hidoc/services/token_storage.dart';
 
+import 'package:proyecto_hidoc/features/user/pages/pago_page.dart';
+
 class DoctoresDisponiblesPage extends StatelessWidget {
   static const String name = 'DoctoresDisponibles';
 
@@ -267,8 +269,17 @@ class _DoctorCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 FilledButton(
                   onPressed: () {
-                    // Aquí se conectará el flujo de pago/cita.
-                    // p.ej.: context.pushNamed(PagoPage.name, queryParameters: {...})
+                    final amount = (doctor.price ?? 8).toString(); // fallback a $8 si es 0
+                    context.pushNamed(
+                      PagoPage.name,
+                      queryParameters: {
+                        'concept': 'Consulta con ${doctor.fullName}',
+                        'amount': amount,
+                        'type': 'consulta',
+                        'doctorId': doctor.id,
+                        'doctorName': doctor.fullName,
+                      },
+                    );
                   },
                   child: const Text('Consultar'),
                 ),
