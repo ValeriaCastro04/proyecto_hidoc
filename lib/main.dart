@@ -11,28 +11,15 @@ import 'features/doctor/services/api_service.dart';
 import 'package:proyecto_hidoc/config/router/app_router.dart';
 import 'package:proyecto_hidoc/common/theme/app_theme.dart';
 import 'package:proyecto_hidoc/common/theme/theme_provider.dart';
-
-/// ===============================
-/// Providers globales
-/// ===============================
-
-/// URL base del API. Ajusta según entorno.
-/// - Android emulator: 10.0.2.2
-/// - iOS simulator: localhost
-/// - Dispositivo físico: IP de tu PC
-/// 
+ 
 final apiServiceProvider = Provider<ApiService>((ref) {
-  // 1. Escucha el dioProvider
   final dio = ref.watch(dioProvider);
-  
-  // 2. Crea ApiService y le "inyecta" el dio
+  // ApiService y le "inyecta" el dio
   return ApiService(dio);
 });
 final doctorProfileProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   // Obtenemos el servicio de API
-  final apiService = ref.watch(apiServiceProvider); // Asegúrate de que apiServiceProvider exista
-  
-  // Llamamos al método que acabamos de corregir
+  final apiService = ref.watch(apiServiceProvider); 
   return await apiService.getMyDoctorProfile();
 });
 final baseUrlProvider = Provider<String>((ref) {
@@ -77,10 +64,6 @@ class TokenStorage {
 
 final tokenStorageProvider = Provider<TokenStorage>((ref) => TokenStorage());
 
-/// Dio con:
-/// - baseUrl
-/// - interceptor: agrega Authorization Bearer si hay token
-/// - auto-refresh con /auth/refresh ante 401 (una vez)
 final dioProvider = Provider<Dio>((ref) {
   final baseUrl = ref.watch(baseUrlProvider);
   final storage = ref.watch(tokenStorageProvider);

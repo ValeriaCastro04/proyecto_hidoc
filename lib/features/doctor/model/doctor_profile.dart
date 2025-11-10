@@ -1,4 +1,3 @@
-// lib/features/doctor/models/doctor_profile.dart
 import 'dart:convert';
 
 class DoctorProfile {
@@ -22,8 +21,7 @@ class DoctorProfile {
     required this.patientCount,
   });
 
-  // --- CORRECCIÓN ---
-  // Renombrado de fromMap a fromJson
+  //conversión desde json
   factory DoctorProfile.fromJson(Map<String, dynamic> map) {
     return DoctorProfile(
       id: map['id'] as String? ?? '',
@@ -36,7 +34,6 @@ class DoctorProfile {
       patientCount: map['patientCount'] as int? ?? 0,
     );
   }
-  // --- FIN CORRECCIÓN ---
 
   factory DoctorProfile.fromJsonString(String source) =>
       DoctorProfile.fromJson(json.decode(source) as Map<String, dynamic>);

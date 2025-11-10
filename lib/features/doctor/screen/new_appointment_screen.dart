@@ -1,12 +1,10 @@
-// lib/features/doctor/widgets/new_appointment_form.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // <-- 1. Importar Riverpod
-// <-- 2. Importar Providers y Modelos
+// providers y Modelos
 import '../../../main.dart';
 import '../model/patient.dart';
 import 'package:proyecto_hidoc/features/doctor/model/create_cita_dto.dart';
 
-// <-- 3. Cambiar a ConsumerStatefulWidget
 class NewAppointmentForm extends ConsumerStatefulWidget {
   final DateTime initialDay;
 
@@ -19,30 +17,28 @@ class NewAppointmentForm extends ConsumerStatefulWidget {
   ConsumerState<NewAppointmentForm> createState() => _NewAppointmentFormState();
 }
 
-// <-- 4. Cambiar a ConsumerState
 class _NewAppointmentFormState extends ConsumerState<NewAppointmentForm> {
-  // --- 5. Estados para cargar pacientes de la API ---
   bool _isLoadingPatients = true;
   List<Patient> _patients = [];
   String? _patientLoadError;
 
   // --- Estados del formulario ---
-  String? _selectedPatientId; // <-- 6. Cambiado de int a String?
+  String? _selectedPatientId; 
   String _reason = '';
   DateTime? _selectedDate;
   double? _selectedStartHour;
   double? _selectedEndHour;
   String? _timeError;
-  bool _isSaving = false; // Para feedback de guardado
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
     _selectedDate = widget.initialDay;
-    _fetchPatients(); // <-- 7. Cargar pacientes al iniciar
+    _fetchPatients(); 
   }
 
-  /// 8. Carga los pacientes desde la API
+  /// carga los pacientes desde la API
   Future<void> _fetchPatients() async {
     setState(() => _isLoadingPatients = true);
     try {
@@ -60,7 +56,7 @@ class _NewAppointmentFormState extends ConsumerState<NewAppointmentForm> {
     }
   }
 
-  /// 9. Guarda la cita en la API
+  /// guarda la cita en la API
   Future<void> _saveAppointment() async {
     setState(() => _timeError = null);
 
@@ -75,8 +71,6 @@ class _NewAppointmentFormState extends ConsumerState<NewAppointmentForm> {
       );
       return;
     }
-
-    // Validar que la hora final sea posterior
     if (_selectedEndHour! <= _selectedStartHour!) {
       setState(() {
         _timeError = "La hora de fin debe ser posterior a la hora de inicio.";
@@ -84,7 +78,7 @@ class _NewAppointmentFormState extends ConsumerState<NewAppointmentForm> {
       return;
     }
 
-    // Tu validación de 30-60 min
+    // validación de 30-60 min
     final duration = _selectedEndHour! - _selectedStartHour!;
     if (duration != 0.5 && duration != 1.0) {
       setState(() {
@@ -96,9 +90,6 @@ class _NewAppointmentFormState extends ConsumerState<NewAppointmentForm> {
     setState(() => _isSaving = true);
 
     try {
-      // --- 11. TRADUCCIÓN DE DATOS (Formulario a DTO) ---
-      // Combina la fecha seleccionada con las horas decimales
-      
       final int startHour = _selectedStartHour!.floor();
       final int startMinute = ((_selectedStartHour! - startHour) * 60).round();
       // Crea el DateTime local
@@ -119,18 +110,13 @@ class _NewAppointmentFormState extends ConsumerState<NewAppointmentForm> {
         endHour,
         endMinute,
       );
-
-      // Crear el DTO
       final dto = CreateCitaDoctorDto(
         patientId: _selectedPatientId!,
-        // Convierte a UTC antes de enviar (toIso8601String lo hará)
         start: startTime.toUtc(), 
         end: endTime.toUtc(),
         reason: _reason,
-        // nota: _notaController.text, // (Si tuvieras un campo de nota)
       );
 
-      // Enviar a la API usando ref.read()
       await ref.read(apiServiceProvider).createCita(dto);
 
       setState(() => _isSaving = false);
@@ -147,7 +133,6 @@ class _NewAppointmentFormState extends ConsumerState<NewAppointmentForm> {
     }
   }
 
-  // --- Tus funciones de formato (sin cambios) ---
   List<double> _generateTimeSlots() {
     final List<double> hours = [];
     for (double h = 8.0; h <= 18.0; h += 0.5) { hours.add(h); }
@@ -158,7 +143,6 @@ class _NewAppointmentFormState extends ConsumerState<NewAppointmentForm> {
     final int m = ((hour - h) * 60).toInt();
     return "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}";
   }
-  // (No se necesita _convertToHalfHourIndex ya que enviamos DateTime)
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +158,6 @@ class _NewAppointmentFormState extends ConsumerState<NewAppointmentForm> {
     final endTimes = getEndTimes(_selectedStartHour);
 
     return Padding(
-      // Padding para el teclado
       padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
       child: SingleChildScrollView(
         child: Column(
@@ -188,7 +171,6 @@ class _NewAppointmentFormState extends ConsumerState<NewAppointmentForm> {
             ),
             const SizedBox(height: 16),
 
-            // --- 12. Dropdown de Paciente (Actualizado) ---
             if (_isLoadingPatients)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 24.0),
@@ -211,13 +193,13 @@ class _NewAppointmentFormState extends ConsumerState<NewAppointmentForm> {
                 ),
               )
             else
-              DropdownButtonFormField<String>( // <-- Tipo String
+              DropdownButtonFormField<String>( 
                 decoration: const InputDecoration(labelText: "Paciente"),
                 value: _selectedPatientId,
                 items: _patients.map((patient) {
                   return DropdownMenuItem<String>(
-                    value: patient.id, // <-- Valor es el UUID
-                    child: Text(patient.fullName), // Nombre desde API
+                    value: patient.id, 
+                    child: Text(patient.fullName), 
                   );
                 }).toList(),
                 onChanged: (val) => setState(() => _selectedPatientId = val),

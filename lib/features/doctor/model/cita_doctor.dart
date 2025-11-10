@@ -1,13 +1,12 @@
-// models/cita_doctor.dart
 import 'patient.dart';
 
 class CitaDoctor {
   final String id;
-  final DateTime start; // Recibimos UTC
-  final DateTime end;   // Recibimos UTC
+  final DateTime start; 
+  final DateTime end;   
   final String reason;
   final String? note;
-  final Patient? patient; // El paciente viene anidado
+  final Patient? patient;
 
   CitaDoctor({
     required this.id,
@@ -18,10 +17,11 @@ class CitaDoctor {
     this.patient,
   });
 
+  //convertir desde json a objeto
   factory CitaDoctor.fromJson(Map<String, dynamic> json) {
     return CitaDoctor(
       id: json['id'],
-      start: DateTime.parse(json['start']), // Se parsea el string ISO
+      start: DateTime.parse(json['start']), 
       end: DateTime.parse(json['end']),
       reason: json['reason'],
       note: json['note'],

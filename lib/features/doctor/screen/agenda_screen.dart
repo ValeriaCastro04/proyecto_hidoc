@@ -27,51 +27,45 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   final ScrollController _scrollController = ScrollController();
   static const double _halfHourHeight = 90.0;
 
-  // --- 6. Nuevos estados para manejar la API ---
   bool _isLoading = true;
   String? _error;
-  // Esta lista almacena las citas PROCESADAS en el formato que tu UI espera
+  // lista almacena las citas PROCESADAS en el formato que tu UI espera
   List<Map<String, Object>> _processedAppointments = [];
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // 7. Cargar datos al iniciar usando 'ref'
       _fetchAppointments();
       _scrollToCurrentHour();
     });
   }
 
-  /// 8. TRADUCTOR: Convierte CitaDoctor (API) a Map (UI)
-  /// Esto es clave para que tu UI de "índices" funcione.
+  /// convierte CitaDoctor (API) a Map (UI)
   List<Map<String, Object>> _processApiCitas(List<CitaDoctor> citasApi) {
     return citasApi.map((cita) {
-      // Convierte las fechas UTC de la API a la hora local del dispositivo
       final localStart = cita.start.toLocal();
       final localEnd = cita.end.toLocal();
 
-      // Convierte la hora local al índice de 30 minutos que tu UI necesita
       final startIndex = (localStart.hour * 2) + (localStart.minute >= 30 ? 1 : 0);
-      // El índice final es el inicio del slot, por eso no sumamos 1
       final endIndex = (localEnd.hour * 2) + (localEnd.minute > 0 ? 1 : 0);
 
       return {
         "patientName": cita.patient?.fullName ?? 'Paciente', 
         "reason": cita.reason,
         "timeStart": startIndex,
-        "timeEnd": endIndex, // Ej: 10:00 a 10:30 es timeStart: 20, timeEnd: 21
-        "color": Colors.blue.shade700, // Puedes cambiar esto
+        "timeEnd": endIndex,
+        "color": Colors.blue.shade700, 
       };
     }).toList();
   }
 
-  /// 9. Carga las citas desde la API
+  /// carga las citas desde la API
   Future<void> _fetchAppointments() async {
     setState(() {
       _isLoading = true;
       _error = null;
-      _processedAppointments = []; // Limpiar datos antiguos
+      _processedAppointments = []; 
     });
 
     try {
@@ -103,7 +97,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       _focusedDay = _focusedDay.add(Duration(days: offset));
       _selectedDay = _focusedDay;
     });
-    _fetchAppointments(); // <-- RECARGA DATOS
+    _fetchAppointments();
   }
 
   /// Ir al día de hoy (ahora recarga los datos)
@@ -112,14 +106,14 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       _focusedDay = DateTime.now();
       _selectedDay = DateTime.now();
     });
-    _fetchAppointments(); // <-- RECARGA DATOS
+    _fetchAppointments(); 
   }
 
-  /// 10. Abre el formulario para crear una nueva cita
+  ///formulario para crear una nueva cita
   void _showNewAppointmentForm() async {
     final result = await showModalBottomSheet<bool>(
       context: context,
-      isScrollControlled: true, // Para que el teclado no tape el modal
+      isScrollControlled: true,
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: NewAppointmentForm(initialDay: _selectedDay),
@@ -132,7 +126,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     }
   }
 
-  // --- Tus funciones de formato (sin cambios) ---
+  // funciones de formato
   String _formatSelectedDay() {
     final day = _selectedDay.day;
     final month = _monthNames[_selectedDay.month];
@@ -164,7 +158,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     }
   }
 
-  /// 11. Widget para el cuerpo (Loading/Error/Data)
+  /// widget para el cuerpo
   Widget _buildAgendaBody() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -182,7 +176,6 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       );
     }
     
-    // Tu ListView original, pero usando _processedAppointments
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
@@ -197,16 +190,13 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         );
 
         if (appointment.isNotEmpty) {
-          // --- 1. Extraer y castear los valores ---
           final int timeStart = appointment['timeStart'] as int;
           final int timeEnd = appointment['timeEnd'] as int;
           final String patientName = appointment['patientName'] as String;
           final String reason = appointment['reason'] as String;
           final Color color = appointment['color'] as Color;
 
-          // Si este índice es el inicio de una cita
           if (index == timeStart) {
-            // --- 2. Usar las variables ya casteadas ---
             final durationInHalfHours = timeEnd - timeStart;
 
             final appointmentHeight = _halfHourHeight * durationInHalfHours;
@@ -253,7 +243,6 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             return const SizedBox.shrink();
           }
         } else {
-          // Espacio vacío de media hora
           final isHourMark = index % 2 == 0;
           return Container(
             margin: const EdgeInsets.symmetric(vertical: 0),
@@ -284,9 +273,6 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     
-    // Ya no usamos mocks
-    // final appointments = _getAppointmentsForDay(_selectedDay);
-
     return Scaffold(
       appBar: HeaderBar.brand(
         logoAsset: 'assets/brand/hidoc_logo.png',
@@ -351,14 +337,14 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           ),
           const Divider(height: 1),
           
-          /// 13. Usar el nuevo body
+          /// el nuevo body
           Expanded(
             child: _buildAgendaBody(),
           ),
         ],
       ),
 
-      /// 14. Botón para AÑADIR CITA
+      /// botón para AÑADIR CITA
       floatingActionButton: FloatingActionButton(
         onPressed: _showNewAppointmentForm,
         tooltip: 'Nueva Cita',

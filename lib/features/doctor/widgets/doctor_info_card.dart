@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Este es el widget 'InfoTab' que ReportesScreen ahora usa.
-// Está diseñado para parecerse a tu imagen y usar los datos del backend.
-
 class InfoTab extends StatelessWidget {
-  // Recibe el Map<String, dynamic> que viene del FutureProvider
   final Map<String, dynamic> doctor;
 
   const InfoTab({super.key, required this.doctor});
@@ -29,8 +25,7 @@ class InfoTab extends StatelessWidget {
       return relevantName.isNotEmpty ? relevantName[0].toUpperCase() : 'D';
     }
 
-    // --- Helper para manejar los campos "No disponible" ---
-    // Tu backend envía "N/A..." o 0 (para experiencia)
+    // manejar los campos "No disponible" ---
     String getDisplayValue(dynamic value, [String suffix = '']) {
       String stringValue = value?.toString() ?? '';
       
@@ -55,7 +50,6 @@ class InfoTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- Sección Superior (Avatar, Nombre, Especialidad) ---
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
