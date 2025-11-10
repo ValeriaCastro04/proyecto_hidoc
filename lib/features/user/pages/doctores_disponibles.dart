@@ -92,10 +92,52 @@ class DoctoresDisponiblesPage extends StatelessWidget {
         child: FutureBuilder<List<DoctorLite>>(
           future: DoctorService().fetchDoctorsByCategoryCode(code),
           builder: (context, snap) {
-            if (snap.connectionState != ConnectionState.done) {
+            final loading = snap.connectionState != ConnectionState.done;
+            final error = snap.hasError;
+            final items = snap.data ?? [];
+
+            if (loading) {
               return const Center(child: CircularProgressIndicator());
             }
-            final items = snap.data ?? [];
+
+            if (error) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48),
+                    const SizedBox(height: 16),
+                    Text('Error al cargar doctores: ${snap.error}'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Force rebuild
+                        (context as Element).markNeedsBuild();
+                      },
+                      child: const Text('Reintentar'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (items.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.search_off_rounded, size: 48),
+                    const SizedBox(height: 16),
+                    Text('No hay doctores disponibles en esta categoría'),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => context.go('/consultas'),
+                      child: const Text('Volver a categorías'),
+                    ),
+                  ],
+                ),
+              );
+            }
 
             return SingleChildScrollView(
               child: Padding(

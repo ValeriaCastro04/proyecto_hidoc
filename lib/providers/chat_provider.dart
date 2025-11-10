@@ -7,19 +7,19 @@ class ChatProvider extends ChangeNotifier {
 
   List<Map<String, dynamic>> get messages => _messages;
 
-  void connect(int userId) {
+  void connect(String userId) {
     _socketService.connect(userId: userId);
 
     _socketService.onMessage(userId, (data) {
       _messages.add({
-        'from': data['senderId'],
-        'content': data['content'],
+        'from': data['senderId']?.toString() ?? '',
+        'content': data['content'] ?? '',
       });
       notifyListeners();
     });
   }
 
-  void sendMessage(int senderId, int receiverId, String text) {
+  void sendMessage(String senderId, String receiverId, String text) {
     if (text.trim().isEmpty) return;
 
     _socketService.sendMessage(senderId, receiverId, text);

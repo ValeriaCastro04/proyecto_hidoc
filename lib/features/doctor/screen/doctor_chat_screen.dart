@@ -30,16 +30,17 @@ class _DoctorChatScreenState extends State<DoctorChatScreen> {
   @override
   void initState() {
     super.initState();
-    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-    chatProvider.connect(2);
-    chatProvider.addListener(() => setState(() {}));
+  final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+  // use string id for current doctor user (adjust to real id when available)
+  chatProvider.connect('2');
+  chatProvider.addListener(() => setState(() {}));
   }
 
   void _sendMessage(String messageText) async {
     if (messageText.trim().isEmpty) return;
     setState(() => _isSendingMessage = true);
-    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-    chatProvider.sendMessage(2, int.parse(widget.patientId), messageText);
+  final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+  chatProvider.sendMessage('2', widget.patientId, messageText);
     setState(() => _isSendingMessage = false);
   }
 
