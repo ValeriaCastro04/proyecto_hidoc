@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // <-- 1. Importar Riverpod
 // <-- 2. Importar Providers y Modelos
 import '../../../main.dart';
-import '../models/patient.dart';
-import '../models/create_cita_dto.dart';
+import '../model/patient.dart';
+import 'package:proyecto_hidoc/features/doctor/model/create_cita_dto.dart';
 
 // <-- 3. Cambiar a ConsumerStatefulWidget
 class NewAppointmentForm extends ConsumerStatefulWidget {

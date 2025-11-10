@@ -3,12 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/list/doctor.dart';
+import 'package:proyecto_hidoc/features/doctor/model/cita_doctor.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
 import '../screen/new_appointment_screen.dart'; 
-
 import '../../../main.dart';
-import '../models/cita_doctor.dart';
 
 class AgendaScreen extends ConsumerStatefulWidget {
   static const String name = 'agenda_screen';

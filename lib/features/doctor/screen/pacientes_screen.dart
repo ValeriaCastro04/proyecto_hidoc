@@ -4,13 +4,11 @@ import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/patient_item_list.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
-// import 'package:proyecto_hidoc/features/doctor/widgets/list/patients.dart'; // 2. Ya no usamos el mock
 import 'patient_history_screen.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/list/doctor.dart';
 
 import '../../../main.dart'; // 3. Importar para el apiServiceProvider
-import '../models/patient.dart'; // 4. Importar el modelo Patient
+import '../model/patient.dart'; // 4. Importar el modelo Patient
 
 // 5. Convertir a ConsumerStatefulWidget
 class PacientesScreen extends ConsumerStatefulWidget {

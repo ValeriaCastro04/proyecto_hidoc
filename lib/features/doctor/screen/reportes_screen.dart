@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // 1. Importar Riverpod
-import 'package:go_router/go_router.dart'; // 2. Importar GoRouter
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart'; 
 import 'package:proyecto_hidoc/common/shared_widgets/footer_group.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/header_bar.dart';

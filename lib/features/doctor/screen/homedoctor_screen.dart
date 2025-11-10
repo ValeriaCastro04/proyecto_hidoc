@@ -6,11 +6,8 @@ import 'package:proyecto_hidoc/features/doctor/widgets/list/quick_actions_doctor
 import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/header_doctor.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/summary_card.dart';
-import 'package:proyecto_hidoc/common/shared_widgets/recent_activity.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/list/activities.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/summary_card_list.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
-import 'package:proyecto_hidoc/features/doctor/widgets/list/doctor.dart';
 
 class HomeDoctorScreen extends StatelessWidget {
   static const String name = 'homedoctor_screen';
@@ -55,7 +52,6 @@ class HomeDoctorScreen extends StatelessWidget {
                         offset: const Offset(0, -20),
                         child: DoctorSummaryCard(items: summaryItems),
                       ),
-                      RecentActivityCard(activities: activities),
                       const SizedBox(height: 20),
                       OutlineButtonGrid(
                         title: 'Acciones Rápidas',

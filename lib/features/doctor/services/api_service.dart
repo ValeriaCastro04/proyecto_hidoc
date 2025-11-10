@@ -1,9 +1,9 @@
 // services/api_service.dart
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
-import '../models/patient.dart';
-import '../models/cita_doctor.dart';
-import '../models/create_cita_dto.dart';
+import 'package:proyecto_hidoc/features/doctor/model/cita_doctor.dart';
+import 'package:proyecto_hidoc/features/doctor/model/create_cita_dto.dart';
+import 'package:proyecto_hidoc/features/doctor/model/patient.dart';
 
 class ApiService {
   final Dio _dio;
