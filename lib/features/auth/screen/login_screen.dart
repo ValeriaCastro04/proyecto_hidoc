@@ -118,7 +118,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await TokenStorage.saveRefreshToken(refresh);
       } catch (_) {}
 
-      // === NUEVO: Cachear nombre/rol/email para saludo inmediato ===
+      
       final roleStr = (user['role'] ?? '').toString();
       final emailStr = (user['email'] ?? _email.text.trim()).toString();
       final nameStr = (user['name'] ?? user['fullName'] ?? user['fullname'] ?? '').toString();
