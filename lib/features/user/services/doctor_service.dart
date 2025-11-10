@@ -24,13 +24,13 @@ class DoctorService {
     int limit = 10,
   }) async {
     final resp = await _dio.get('/doctors', queryParameters: {
-      'category': categoryCode,
+      'category': categoryCode.toUpperCase(), // Aseguramos que sea mayúsculas
       'page': page,
       'limit': limit,
     });
 
     final body = (resp.data is Map) ? Map<String, dynamic>.from(resp.data) : <String, dynamic>{};
-    final data = body['data'];
+    final data = body['data'] ?? [];
     final list = (data is List) ? data : <dynamic>[];
 
     return list

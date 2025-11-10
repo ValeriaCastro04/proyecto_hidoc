@@ -3,7 +3,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 class SocketService {
   late IO.Socket socket;
 
-  void connect({required int userId}) {
+  void connect({required String userId}) {
     socket = IO.io('http://10.0.2.2:3000', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
@@ -20,7 +20,7 @@ class SocketService {
     });
   }
 
-  void sendMessage(int senderId, int receiverId, String content) {
+  void sendMessage(String senderId, String receiverId, String content) {
     socket.emit('send_message', {
       'senderId': senderId,
       'receiverId': receiverId,
@@ -28,7 +28,7 @@ class SocketService {
     });
   }
 
-  void onMessage(int userId, Function(dynamic) callback) {
+  void onMessage(String userId, Function(dynamic) callback) {
     socket.on('receive_message_$userId', callback);
   }
 

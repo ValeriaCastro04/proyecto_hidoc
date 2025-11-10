@@ -1,6 +1,6 @@
 // services/api_service.dart
 import 'package:dio/dio.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:proyecto_hidoc/features/doctor/model/cita_doctor.dart';
 import 'package:proyecto_hidoc/features/doctor/model/create_cita_dto.dart';
 import 'package:proyecto_hidoc/features/doctor/model/patient.dart';

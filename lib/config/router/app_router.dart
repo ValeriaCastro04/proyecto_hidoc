@@ -22,6 +22,8 @@ import 'package:proyecto_hidoc/features/user/screen/patient_medical_history_scre
 
 // CHAT
 import 'package:proyecto_hidoc/features/user/screen/patient_chat_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:proyecto_hidoc/providers/chat_provider.dart';
 
 // Pages reutilizables de paciente
 import 'package:proyecto_hidoc/features/user/pages/doctores_disponibles.dart';
@@ -155,10 +157,13 @@ final GoRouter appRouter = GoRouter(
       name: 'Chat',
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>? ?? {};
-        return PatientChatScreen(
-          doctorId: extra['doctorId'] ?? 'dr_001',
-          doctorName: extra['doctorName'] ?? 'Dr Lopez',
-          doctorInitials: extra['doctorInitials'] ?? 'DrL',
+        return ChangeNotifierProvider(
+          create: (_) => ChatProvider(),
+          child: PatientChatScreen(
+            doctorId: extra['doctorId'] ?? 'dr_001',
+            doctorName: extra['doctorName'] ?? 'Dr Lopez',
+            doctorInitials: extra['doctorInitials'] ?? 'DrL',
+          ),
         );
       },
     ),
@@ -189,10 +194,13 @@ final GoRouter appRouter = GoRouter(
       name: 'DoctorChat',
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>? ?? {};
-        return DoctorChatScreen(
-          patientId: extra['patientId'] ?? 'patient_001',
-          patientName: extra['patientName'] ?? 'Paciente',
-          patientInitials: extra['patientInitials'] ?? 'P',
+        return ChangeNotifierProvider(
+          create: (_) => ChatProvider(),
+          child: DoctorChatScreen(
+            patientId: extra['patientId'] ?? 'patient_001',
+            patientName: extra['patientName'] ?? 'Paciente',
+            patientInitials: extra['patientInitials'] ?? 'P',
+          ),
         );
       },
     ),

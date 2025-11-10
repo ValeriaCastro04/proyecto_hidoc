@@ -25,20 +25,37 @@ class _PatientChatScreenState extends State<PatientChatScreen> {
   ChatTab _selectedTab = ChatTab.chat;
   bool _isLoadingMessages = false;
   bool _isSendingMessage = false;
+  late ChatProvider _chatProvider;
+  late VoidCallback _chatListener;
 
   @override
   void initState() {
     super.initState();
-    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-    chatProvider.connect(1);
-    chatProvider.addListener(() => setState(() {}));
+  _chatProvider = Provider.of<ChatProvider>(context, listen: false);
+  // use string id for current user (adjust if you have real user id)
+  _chatProvider.connect('1');
+    _chatListener = () {
+      if (mounted) setState(() {});
+    };
+    _chatProvider.addListener(_chatListener);
+  }
+
+  @override
+  void dispose() {
+    // cleanup provider listeners and socket connection
+    try {
+      _chatProvider.removeListener(_chatListener);
+      _chatProvider.disconnect();
+    } catch (_) {}
+    super.dispose();
   }
 
   void _sendMessage(String messageText) async {
     if (messageText.trim().isEmpty) return;
     setState(() => _isSendingMessage = true);
-    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-    chatProvider.sendMessage(1, int.parse(widget.doctorId), messageText);
+  final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+  // senderId is '1' (patient) and receiverId is doctorId (string), no int.parse
+  chatProvider.sendMessage('1', widget.doctorId, messageText);
     setState(() => _isSendingMessage = false);
   }
 
