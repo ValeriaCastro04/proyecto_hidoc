@@ -16,6 +16,7 @@ class PagoExitosoPage extends StatelessWidget {
   final String doctorName;     // ej: "Dr. María López"
   final String appointmentId;  // ej: "CITA-001234"
   final String? metodo;        // ej: "Tarjeta **** 3456"
+  final String? doctorId;      // opcional, para abrir chat
 
   const PagoExitosoPage({
     super.key,
@@ -24,14 +25,25 @@ class PagoExitosoPage extends StatelessWidget {
     required this.doctorName,
     required this.appointmentId,
     this.metodo,
+    this.doctorId,
   });
 
   String _money(double v) => '\$${v.toStringAsFixed(2)}';
+
+  String _initials(String name) {
+    final p = name.trim().split(RegExp(r'\s+'));
+    if (p.isEmpty) return 'DR';
+    if (p.length == 1) return p.first[0].toUpperCase();
+    return (p.first[0] + p.last[0]).toUpperCase();
+  }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+
+    // fallback: si no vino doctorId en el constructor, lo leemos de query
+    final qpDoctorId = doctorId ?? GoRouterState.of(context).uri.queryParameters['doctorId'];
 
     return Scaffold(
       appBar: HeaderBar.category(
@@ -71,17 +83,14 @@ class PagoExitosoPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('¡Pago confirmado!',
+                            Text(
+                              '¡Pago confirmado!',
                               style: tt.titleMedium?.copyWith(
                                 color: Colors.green.shade800,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              'Tu consulta con $doctorName está lista para iniciar.',
-                              style: tt.bodyMedium,
-                            ),
                           ],
                         ),
                       ),
@@ -98,7 +107,7 @@ class PagoExitosoPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Resumen de pago reutilizable
+                // Resumen del pago
                 PaymentSummaryCard(
                   title: 'Resumen del Pago',
                   lines: [
@@ -135,11 +144,12 @@ class PagoExitosoPage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: (){
-                      context.push('/chat', extra: {
-                        'doctorId': 'dr_001',
-                        'doctorName': 'Dr Lopez',
-                        'doctorInitials': 'Dr L',
+                    onPressed: () {
+                      // abrimos chat con los datos del doctor
+                      context.pushNamed('Chat', extra: {
+                        'doctorId': qpDoctorId ?? 'doctor',
+                        'doctorName': doctorName,
+                        'doctorInitials': _initials(doctorName),
                       });
                     },
                     style: ElevatedButton.styleFrom(
@@ -150,18 +160,18 @@ class PagoExitosoPage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.chat, color: Colors.white),
-                        SizedBox(width: 8,),
+                        SizedBox(width: 8),
                         Text(
                           'Iniciar consulta ahora',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white
-                          )
-                        )
-                      ]
-                    )
-                    )
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 10),
               ],
