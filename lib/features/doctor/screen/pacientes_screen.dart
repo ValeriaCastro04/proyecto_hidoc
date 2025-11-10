@@ -6,11 +6,10 @@ import 'package:proyecto_hidoc/features/doctor/widgets/patient_item_list.dart';
 import 'package:proyecto_hidoc/features/doctor/widgets/list/footer_doctor.dart';
 import 'patient_history_screen.dart';
 import 'package:proyecto_hidoc/common/shared_widgets/theme_toggle_button.dart';
+import '../../../main.dart'; 
+import '../model/patient.dart';
 
-import '../../../main.dart'; // 3. Importar para el apiServiceProvider
-import '../model/patient.dart'; // 4. Importar el modelo Patient
-
-// 5. Convertir a ConsumerStatefulWidget
+// convertir a ConsumerStatefulWidget
 class PacientesScreen extends ConsumerStatefulWidget {
   static const String name = 'pacientes_screen';
   const PacientesScreen({super.key});
@@ -19,12 +18,12 @@ class PacientesScreen extends ConsumerStatefulWidget {
   ConsumerState<PacientesScreen> createState() => _PacientesScreenState();
 }
 
-// 6. Convertir a ConsumerState
+// convertir a ConsumerState
 class _PacientesScreenState extends ConsumerState<PacientesScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
 
-  // 7. Nuevos estados para manejar la API
+  // estados para manejar la API
   bool _isLoading = true;
   String? _error;
   List<Patient> _allPatients = [];     // Lista maestra de la API
@@ -37,11 +36,11 @@ class _PacientesScreenState extends ConsumerState<PacientesScreen> {
     _searchFocus.addListener(() {
       setState(() {});
     });
-    // 8. Cargar pacientes al iniciar
+    // pacientes al iniciar
     _fetchPatients();
   }
 
-  /// 9. Carga los pacientes desde la API
+  /// pacientes desde la API
   Future<void> _fetchPatients() async {
     setState(() {
       _isLoading = true;
@@ -49,7 +48,6 @@ class _PacientesScreenState extends ConsumerState<PacientesScreen> {
     });
 
     try {
-      // Usamos ref (disponible en ConsumerState) para leer el provider
       final patientsFromApi = await ref.read(apiServiceProvider).getPatients();
       
       setState(() {
@@ -65,7 +63,7 @@ class _PacientesScreenState extends ConsumerState<PacientesScreen> {
     }
   }
 
-  /// 10. Lógica de filtro actualizada
+  /// filtro actualizada
   void _filterPatients() {
     final query = _searchController.text.toLowerCase();
     setState(() {
@@ -110,12 +108,12 @@ class _PacientesScreenState extends ConsumerState<PacientesScreen> {
       );
     }
 
-    // 12. ListView.builder actualizado
+    // listView.builder actualizado
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 10.0),
       itemCount: _filteredPatients.length,
       itemBuilder: (context, index) {
-        // Ahora 'patient' es un objeto de tipo Patient
+        // 'patient' es un objeto de tipo Patient
         final patient = _filteredPatients[index]; 
 
         // Derivamos los iniciales del nombre
@@ -128,12 +126,6 @@ class _PacientesScreenState extends ConsumerState<PacientesScreen> {
         return PatientListItem(
           patientName: patient.fullName, // Usamos la propiedad del modelo
           onTap: () {
-            
-            // ⚠️ NOTA IMPORTANTE:
-            // Tu API (getPatients) solo devuelve id, fullName, email, phone.
-            // La pantalla PatientHistoryScreen espera 'numero_DUI' e 'history',
-            // que no tenemos. Los pasaremos como vacíos por ahora.
-            
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -182,7 +174,7 @@ class _PacientesScreenState extends ConsumerState<PacientesScreen> {
       ),
       body: Column(
         children: [
-          // Buscador (sin cambios)
+          // Buscador
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(

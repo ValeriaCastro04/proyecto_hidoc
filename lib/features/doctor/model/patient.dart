@@ -1,4 +1,3 @@
-// models/patient.dart
 class Patient {
   final String id; // UUID
   final String name;
@@ -20,6 +19,7 @@ class Patient {
   // Método para combinar nombre y apellido
   String get fullName => '$name $lastName';
 
+  //se convierte a objeto
   factory Patient.fromJson(Map<String, dynamic> json) {
     return Patient(
       id: json['id'],

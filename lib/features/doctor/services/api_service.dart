@@ -1,4 +1,3 @@
-// services/api_service.dart
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:proyecto_hidoc/features/doctor/model/cita_doctor.dart';
@@ -52,7 +51,6 @@ class ApiService {
       );
       return CitaDoctor.fromJson(response.data);
     } on DioException catch (e) {
-      // NestJS envía errores 400 (Bad Request) con detalles
       if (e.response?.statusCode == 400) {
         throw Exception('Error: ${e.response?.data['message']}');
       }
